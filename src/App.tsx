@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { LayoutDashboard, Wallet, TrendingUp, Newspaper } from 'lucide-react';
 import ToolCard from './components/ToolCard';
