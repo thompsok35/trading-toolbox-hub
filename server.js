@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(join(__dirname, 'dist')));
 
 // Fallback to index.html for Single Page Application routing
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
