@@ -9,7 +9,7 @@
     "build:local": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview"
+    "start": "serve -s dist"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
