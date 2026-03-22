@@ -21,5 +21,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Static server dynamically bound and listening on port ${port}`);
 });
-  console.log(`Static asset server listening on port ${port} across all interfaces`);
-});
