@@ -1,6 +1,9 @@
 [build]
 builder = "Nixpacks"
 
+[env]
+PORT = "3000"
+
 [phases.build]
 cmds = ["echo 'Skipping server build, serving pre-compiled static files'"]
 
