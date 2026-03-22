@@ -16,7 +16,7 @@ app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
-const port = process.env.PORT || 3000;
+const port = 3000;
 // Securely bind port dynamically (Node natively supports both IPv4 & IPv6 here without explicit strict strings)
 app.listen(port, () => {
   console.log(`Static server dynamically bound and listening on port ${port}`);
