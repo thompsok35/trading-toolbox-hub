@@ -14,7 +14,7 @@ app.use((req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-// Explicitly bind to 0.0.0.0 to securely map Railway's ingress proxy
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Static asset server listening on host 0.0.0.0 and port ${port}`);
+// Explicitly bind to '::' to support Railway's IPv6 internal ingress mesh proxy
+app.listen(port, '::', () => {
+  console.log(`Static asset server listening on port ${port} across all interfaces`);
 });
