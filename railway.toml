@@ -1,5 +1,8 @@
 [build]
 builder = "Nixpacks"
 
+[phases.build]
+cmds = ["echo 'Skipping server build, serving pre-compiled static files'"]
+
 [deploy]
-startCommand = "npm start"
+startCommand = "npx serve -s dist"
