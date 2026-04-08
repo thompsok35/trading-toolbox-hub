@@ -1,9 +1,11 @@
 import { motion, type Variants } from 'framer-motion';
-import { LayoutDashboard, Wallet, TrendingUp, Newspaper } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, Newspaper, Bell } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import ToolCard from './components/ToolCard';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import './App.css';
 
-function App() {
+const Home = () => {
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -102,6 +104,15 @@ function App() {
 
           <motion.div variants={itemVariants}>
             <ToolCard 
+              title="Opus Alerting Engine"
+              description="Create SMS alerts based on Market Insights expected moves. Execute trade plans including covered calls and buy-writes directly from your alerts."
+              icon={Bell}
+              url="https://alerts.mytradingtoolbox.com/"
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <ToolCard 
               title="Market Insights"
               description="Derivative analysis generating implied expected moves via ATM Straddles."
               icon={TrendingUp}
@@ -120,13 +131,34 @@ function App() {
         </motion.div>
 
       </motion.div>
+
       
-      <p className="mt-8 text-slate-500 text-sm font-medium tracking-wide z-10">
-        &copy; {new Date().getFullYear()} My Trading Toolbox. All rights reserved.
-      </p>
+      <footer className="mt-8 flex flex-col items-center gap-4 z-10">
+        <p className="text-slate-500 text-sm font-medium tracking-wide">
+          &copy; {new Date().getFullYear()} My Trading Toolbox. All rights reserved.
+        </p>
+        <Link 
+          to="/privacy" 
+          className="text-slate-400 hover:text-blue-400 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 border-b border-white/5 hover:border-blue-400/50 pb-0.5"
+        >
+          Privacy Policy
+        </Link>
+      </footer>
 
     </div>
+  );
+};
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
 export default App;
+
