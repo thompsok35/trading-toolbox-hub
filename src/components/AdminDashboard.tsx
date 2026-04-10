@@ -91,6 +91,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = 'My Trading Toolbox-Admin';
     if (password) {
       fetchData(password);
     }

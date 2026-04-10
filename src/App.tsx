@@ -34,6 +34,10 @@ const PARTNERS = [
 ];
 
 const Home = () => {
+  useEffect(() => {
+    document.title = 'My Trading Toolbox';
+  }, []);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
