@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, TrendingUp, Bell } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, Bell, Target, BarChart3 } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { useEffect } from 'react';
@@ -6,7 +6,32 @@ import ToolCard from './components/ToolCard';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import LeadCapture from './components/LeadCapture';
 import AdminDashboard from './components/AdminDashboard';
+import PartnerCard from './components/PartnerCard';
 import './App.css';
+
+const PARTNERS = [
+  {
+    name: 'Tradier',
+    description: 'A powerful, low-cost brokerage built for developers and active options traders.',
+    url: 'https://trade.tradier.com/raf-open/?mwr=keith-a847',
+    icon: BarChart3,
+    badge: 'Brokerage'
+  },
+  {
+    name: 'Finviz',
+    description: 'Professional-grade stock screener and visualizations for advanced market analysis.',
+    url: 'https://finviz.com/?affilId=78883761',
+    icon: TrendingUp,
+    badge: 'Analysis'
+  },
+  {
+    name: 'OptionsAnimal',
+    description: 'Expert-led options education and trading mentorship to take your skills to the next level.',
+    url: 'https://www.optionsanimal.com/referrals/',
+    icon: Target,
+    badge: 'Education'
+  }
+];
 
 const Home = () => {
   const containerVariants: Variants = {
@@ -124,6 +149,26 @@ const Home = () => {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Partners Section */}
+        <motion.div
+           initial={{ opacity: 0, y: 30 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           transition={{ delay: 0.1, duration: 0.8 }}
+           className="space-y-6"
+        >
+          <div className="flex flex-col items-center text-center px-4">
+            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">Trusted Trading Partners</h2>
+            <p className="text-slate-500 text-sm mt-2 max-w-md">We partner with industry leaders to provide you with the best trading ecosystem.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {PARTNERS.map((partner, idx) => (
+              <PartnerCard key={idx} {...partner} />
+            ))}
+          </div>
+        </motion.div>
 
         {/* Lead Capture Section */}
         <motion.div
