@@ -21,15 +21,16 @@ const PartnerCard: React.FC<PartnerCardProps> = ({ name, description, url, icon:
       </div>
 
       <div className="relative z-10">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-3 bg-blue-500/10 rounded-2xl group-hover:bg-blue-500/20 transition-colors">
-            <Icon className="text-blue-400 w-6 h-6" />
-          </div>
-          {badge && (
-            <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest shadow-sm">
+        {badge && (
+          <div className="mb-4">
+            <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest shadow-sm w-fit">
               <ShieldCheck className="w-3 h-3" /> {badge}
             </span>
-          )}
+          </div>
+        )}
+        
+        <div className="p-3 bg-blue-500/10 rounded-2xl group-hover:bg-blue-500/20 transition-colors w-fit mb-4">
+          <Icon className="text-blue-400 w-6 h-6" />
         </div>
 
         <h3 className="text-xl font-black text-white mb-2 tracking-tight">{name}</h3>
