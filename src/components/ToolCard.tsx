@@ -23,7 +23,7 @@ const ToolCard: React.FC<ToolCardProps> = ({ title, description, icon: Icon, url
             
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5">
-                    <h3 className="text-base font-bold text-slate-100 tracking-wide truncate">{title}</h3>
+                    <h3 className="text-base font-bold text-slate-100 tracking-wide leading-snug">{title}</h3>
                     {isComingSoon && (
                         <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-slate-800 text-slate-400 rounded-full border border-slate-700 shrink-0">
                             Soon

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, TrendingUp, Bell, Target, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp, Bell, Target, BarChart3, Activity, Bot } from 'lucide-react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { useEffect } from 'react';
@@ -119,7 +119,7 @@ const Home = () => {
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               <motion.div variants={itemVariants}>
                 <ToolCard 
@@ -145,6 +145,24 @@ const Home = () => {
                   description="Create SMS alerts based on Market Insights expected moves. Execute trade plans including covered calls and buy-writes directly from your alerts."
                   icon={Bell}
                   url="https://alerts.mytradingtoolbox.com/"
+                />
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <ToolCard 
+                  title="Opportunity Scanner & Stock Health Analysis"
+                  description="Daily ingestion of all publicly traded stocks with health scores compared against S&P 500, Sector, and Industry peers. Create and share scanner lists across Opus applications."
+                  icon={Activity}
+                  url="https://dataservices.mytradingtoolbox.com/login"
+                />
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <ToolCard 
+                  title="Opus AI Options Coach"
+                  description="AI agent with curated in-depth options strategy knowledge to help beginner and advanced options traders make better decisions about their next position."
+                  icon={Bot}
+                  url="https://coach.mytradingtoolbox.com/"
                 />
               </motion.div>
 

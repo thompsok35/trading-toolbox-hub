@@ -6,6 +6,8 @@ const TOOLS = [
   { id: 'opus-analysis', name: 'Opus Analysis Engine' },
   { id: 'cashmap', name: 'CashMap Planner' },
   { id: 'opus-alerts', name: 'Opus Alerting Engine' },
+  { id: 'opportunity-scanner', name: 'Opportunity Scanner & Stock Health' },
+  { id: 'opus-ai-coach', name: 'Opus AI Options Coach' },
   { id: 'market-insights', name: 'Market Insights' },
   { id: 'market-update', name: 'Daily Market Update' }
 ];
