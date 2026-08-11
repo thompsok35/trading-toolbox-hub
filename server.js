@@ -2,6 +2,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { query, initDb } from './db.js';
+import { sendAdminNewLeadAlert, sendWelcomeEmail } from './email.js';
 
 const app = express();
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,6 +31,13 @@ app.post('/api/leads', async (req, res) => {
       RETURNING *;
     `;
     const result = await query(queryString, [email, JSON.stringify(preferences || [])]);
+
+    // Dispatch admin notification and welcome email asynchronously
+    Promise.all([
+      sendAdminNewLeadAlert(email, preferences),
+      sendWelcomeEmail(email)
+    ]).catch(err => console.error('[Hub Email] Async error sending lead notifications:', err));
+
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error saving lead:', err);
