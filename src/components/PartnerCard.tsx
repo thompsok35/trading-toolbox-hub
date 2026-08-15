@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface PartnerCardProps {
   name: string;
   description: string;
-  url: string;
+  url?: string;
   icon: React.ElementType;
   badge?: string;
 }
@@ -38,14 +38,20 @@ const PartnerCard: React.FC<PartnerCardProps> = ({ name, description, url, icon:
           {description}
         </p>
 
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-bold text-blue-400 transition-all hover:text-blue-300 group-hover:gap-3"
-        >
-          Visit Partner <ExternalLink className="w-4 h-4" />
-        </a>
+        {url && url !== '#' ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-bold text-blue-400 transition-all hover:text-blue-300 group-hover:gap-3"
+          >
+            Visit Partner <ExternalLink className="w-4 h-4" />
+          </a>
+        ) : (
+          <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500">
+            Verified Infrastructure
+          </span>
+        )}
       </div>
     </motion.div>
   );

@@ -1,85 +1,91 @@
-import { LayoutDashboard, Wallet, TrendingUp, Bell, Target, BarChart3, Activity, Bot } from 'lucide-react';
+﻿import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { motion, type Variants } from 'framer-motion';
-import { useEffect } from 'react';
+import { 
+  TrendingUp, 
+  Wallet, 
+  Bell, 
+  Activity, 
+  Bot, 
+  LayoutDashboard,
+  Shield,
+  Layers
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import ToolCard from './components/ToolCard';
-import PrivacyPolicy from './components/PrivacyPolicy';
 import LeadCapture from './components/LeadCapture';
-import AdminDashboard from './components/AdminDashboard';
 import PartnerCard from './components/PartnerCard';
-import './App.css';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import AdminDashboard from './components/AdminDashboard';
+import Unsubscribe from './components/Unsubscribe';
 
 const PARTNERS = [
   {
-    name: 'Tradier',
-    description: 'A powerful, low-cost brokerage built for developers and active options traders.',
-    url: 'https://trade.tradier.com/raf-open/?mwr=keith-a847',
-    icon: BarChart3,
-    badge: 'Brokerage'
-  },
-  {
-    name: 'Finviz',
-    description: 'Professional-grade stock screener and visualizations for advanced market analysis.',
-    url: 'https://finviz.com/?affilId=78883761',
+    name: 'Tradier Brokerage',
+    description: 'Direct market access and automated execution engine with flat-rate options pricing.',
     icon: TrendingUp,
-    badge: 'Analysis'
+    badge: 'Execution Partner',
+    url: 'https://tradier.com'
   },
   {
-    name: 'OptionsAnimal',
-    description: 'Expert-led options education and trading mentorship to take your skills to the next level.',
-    url: 'https://www.optionsanimal.com/referrals/',
-    icon: Target,
-    badge: 'Education'
+    name: 'FinViz & Intrinsic Analytics',
+    description: 'Deep fundamental screening, institutional ownership tracking, and automated DCF valuation models.',
+    icon: Layers,
+    badge: 'Data Feed',
+    url: 'https://finviz.com'
+  },
+  {
+    name: 'Enterprise Security',
+    description: 'Bank-grade 256-bit encryption with isolated API keys and multi-factor authentication for portfolio safety.',
+    icon: Shield,
+    badge: 'Infrastructure'
   }
 ];
 
-const Home = () => {
-  useEffect(() => {
-    document.title = 'My Trading Toolbox';
-  }, []);
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
     }
-  };
+  }
+};
 
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+const Home: React.FC = () => {
+  const scrollToWaitlist = () => {
+    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-[#02040c] flex flex-col items-center py-12 px-4 md:px-6 relative overflow-x-hidden transition-all duration-500">
-      
-      {/* Dynamic Background Effects */}
-      <div className="fixed top-[-15%] left-[-10%] w-[50%] h-[50%] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-5%] w-[45%] h-[45%] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="fixed top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[20%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-      
-      <div className="w-full max-w-4xl z-10 space-y-12">
-        
-        {/* Main Content Sections */}
+    <div className="min-h-screen bg-[#02040c] text-white flex flex-col justify-between p-4 md:p-8 font-outfit relative selection:bg-blue-500 selection:text-white">
+      {/* Background glow overlay */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-teal-500/10 blur-[140px] rounded-full" />
+        <div className="absolute top-1/2 right-10 w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="w-full max-w-5xl mx-auto z-10">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="space-y-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="space-y-16"
         >
           {/* Hero Section */}
-          <div className="bg-slate-900/30 backdrop-blur-2xl border border-white/10 rounded-[1.75rem] p-6 md:p-8 shadow-[0_0_50px_rgba(37,99,235,0.05)]">
-            <div className="text-center mb-8 flex flex-col items-center">
-              {/* Join waitlist shortcut pill */}
-              <motion.button
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.8 }}
-                onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
-                className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 text-xs font-semibold text-blue-300 tracking-widest uppercase shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:bg-blue-500/10 hover:border-blue-500/40 transition-all cursor-pointer group"
+          <div className="space-y-8">
+            <div className="flex flex-col items-center text-center">
+              
+              {/* Badge Button with Smooth Scroll */}
+              <motion.button 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={scrollToWaitlist}
+                className="cursor-pointer group mb-6 px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-md text-blue-300 text-xs font-semibold tracking-wide flex items-center gap-2 hover:bg-blue-500/20 hover:border-blue-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                 Join the Waitlist
@@ -225,7 +231,7 @@ const Home = () => {
             to="/admin" 
             className="text-slate-500 hover:text-blue-400 text-xs font-semibold uppercase tracking-widest transition-all duration-300"
           >
-            Admin
+            Admin CRM
           </Link>
         </div>
         <p className="text-slate-600 text-xs font-medium tracking-wide">
@@ -242,7 +248,6 @@ function App() {
   useEffect(() => {
     const email = localStorage.getItem('lead_email');
     if (email) {
-      // Send a heartbeat to update last_accessed
       fetch('/api/leads/heartbeat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -256,6 +261,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/admin/*" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
@@ -263,4 +269,3 @@ function App() {
 }
 
 export default App;
-
