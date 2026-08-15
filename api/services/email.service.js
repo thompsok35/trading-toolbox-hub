@@ -2,8 +2,42 @@ import { config } from '../config/env.js';
 
 export const EMAIL_TEMPLATES = [
   {
+    id: 'welcome_introduction',
+    name: 'Welcome & Introduction (Discovery & Strategy)',
+    category: 'Onboarding & Discovery',
+    subject: 'Welcome to MyTradingToolbox — quick hello from Keith',
+    description: 'Friendly intro asking how they found you, what strategies they trade, specific questions to answer by email, and offering an optional live Google Meet.',
+    defaultMeetUrl: config.defaultMeetUrl,
+    body: `
+      <p>Hi {{name}},</p>
+      <p>I'm Keith Thompson, the creator behind <strong>MyTradingToolbox</strong>. I wanted to personally reach out, say hello, and welcome you to our trading community!</p>
+      
+      <p>We engineered these tools specifically for active income and options traders who want clearer data, automated cash flow forecasting, and disciplined risk management.</p>
+
+      <div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
+        <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 15px;">I'd love to learn a little about your trading:</h3>
+        <ol style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
+          <li><strong>How did you find MyTradingToolbox?</strong> (A friend/referral, trader community, social media, or search?)</li>
+          <li><strong>What strategies are you currently running?</strong> (Covered calls, cash-secured puts, spreads, dividend growth, etc.)</li>
+          <li><strong>Do you have any specific questions about our tools</strong> that I can answer for you with a quick reply?</li>
+        </ol>
+      </div>
+
+      <p>You can simply <strong>hit Reply to this email</strong> and let me know—I read and respond to every email personally.</p>
+
+      <div style="background-color: #0f172a; padding: 18px 20px; border-radius: 12px; border: 1px dashed #334155; margin: 24px 0; text-align: center;">
+        <p style="color: #94a3b8; font-size: 13px; margin: 0 0 12px 0;">Prefer to chat live? I'd be happy to hop on a quick 10-15 minute Google Meet video call:</p>
+        <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px; box-shadow: 0 4px 12px rgba(2,132,199,0.3);">
+          Book / Join Quick Google Meet &rarr;
+        </a>
+      </div>
+
+      <p style="margin-bottom: 0;">Excited to have you with us,<br/><strong>Keith Thompson</strong><br/><span style="color: #64748b; font-size: 13px;">Founder, MyTradingToolbox</span></p>
+    `
+  },
+  {
     id: 'google_meet_demo',
-    name: 'Google Meet 1-on-1 Demo Invitation',
+    name: 'Google Meet 1-on-1 Demo Walkthrough',
     category: 'Sales & Onboarding',
     subject: 'Personal Invitation: 1-on-1 Walkthrough of MyTradingToolbox Suite',
     description: 'Invite high-intent traders to an exclusive 1-on-1 Google Meet video call walkthrough of Opus, CashMap, and Alerting Engine.',
@@ -218,7 +252,7 @@ export class EmailService {
     }
   }
 
-  async sendDirectCrmEmail({ toEmail, name = '', templateId = 'google_meet_demo', customSubject = '', customBody = '', googleMeetUrl, unsubscribeToken = '', appBaseUrl = config.defaultAppUrl }) {
+  async sendDirectCrmEmail({ toEmail, name = '', templateId = 'welcome_introduction', customSubject = '', customBody = '', googleMeetUrl, unsubscribeToken = '', appBaseUrl = config.defaultAppUrl }) {
     const template = EMAIL_TEMPLATES.find(t => t.id === templateId) || EMAIL_TEMPLATES[0];
     const subject = customSubject || template.subject;
     const rawBody = customBody || template.body;

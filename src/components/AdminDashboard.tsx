@@ -18,7 +18,8 @@ import {
   Clock, 
   X, 
   ChevronDown, 
-  AlertCircle 
+  AlertCircle,
+  HelpCircle
 } from 'lucide-react';
 
 interface Note {
@@ -31,7 +32,7 @@ interface Lead {
   id: number;
   email: string;
   name?: string;
-  status: 'lead' | 'contacted' | 'demo_requested' | 'demo_scheduled' | 'customer' | 'unsubscribed' | 'inactive';
+  status: 'lead' | 'intro_sent' | 'contacted' | 'demo_requested' | 'demo_scheduled' | 'customer' | 'unsubscribed' | 'inactive';
   source?: string;
   preferences: string[];
   notes?: Note[];
@@ -70,8 +71,20 @@ const AVAILABLE_TOOLS = [
   { id: 'market-update', name: 'Daily Market Update' }
 ];
 
+const DISCOVERY_SOURCES = [
+  { id: 'referral', label: 'Friend / Word of Mouth' },
+  { id: 'trading_group', label: 'Discord / Trading Community' },
+  { id: 'twitter_x', label: 'Twitter / X' },
+  { id: 'youtube', label: 'YouTube / Video' },
+  { id: 'reddit', label: 'Reddit / Options Subreddit' },
+  { id: 'google_search', label: 'Google Search' },
+  { id: 'manual_admin', label: 'Direct Outreach' },
+  { id: 'waitlist', label: 'Website Waitlist' }
+];
+
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
   lead: { label: 'New Lead', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+  intro_sent: { label: 'Intro Sent 💬', bg: 'bg-teal-500/10', text: 'text-teal-300', border: 'border-teal-500/20' },
   contacted: { label: 'Contacted', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
   demo_requested: { label: 'Demo Requested', bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
   demo_scheduled: { label: 'Demo Scheduled 📹', bg: 'bg-indigo-500/10', text: 'text-indigo-300', border: 'border-indigo-500/20' },
@@ -113,7 +126,7 @@ const AdminDashboard: React.FC = () => {
   const [addContactLoading, setAddContactLoading] = useState(false);
 
   // Email Composer State
-  const [emailTemplateId, setEmailTemplateId] = useState('google_meet_demo');
+  const [emailTemplateId, setEmailTemplateId] = useState('welcome_introduction');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailCustomBody, setEmailCustomBody] = useState('');
   const [emailGoogleMeetUrl, setEmailGoogleMeetUrl] = useState(
@@ -123,7 +136,7 @@ const AdminDashboard: React.FC = () => {
   const [emailFeedback, setEmailFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Broadcast Campaign State
-  const [broadcastTemplateId, setBroadcastTemplateId] = useState('google_meet_demo');
+  const [broadcastTemplateId, setBroadcastTemplateId] = useState('welcome_introduction');
   const [broadcastTargetStatus, setBroadcastTargetStatus] = useState('all');
   const [broadcastTargetTool, setBroadcastTargetTool] = useState('all');
   const [broadcastSending, setBroadcastSending] = useState(false);
@@ -138,9 +151,9 @@ const AdminDashboard: React.FC = () => {
     setError('');
     try {
       const [leadsRes, statsRes, templatesRes] = await Promise.all([
-        fetch('/api/admin/contacts', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/admin/stats', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/admin/templates', { headers: { 'x-admin-password': pw } })
+        fetch('/api/v1/contacts', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/v1/analytics/stats', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/v1/campaigns/templates', { headers: { 'x-admin-password': pw } })
       ]);
 
       if (leadsRes.status === 401) {
@@ -189,7 +202,7 @@ const AdminDashboard: React.FC = () => {
 
     setAddContactLoading(true);
     try {
-      const res = await fetch('/api/admin/contacts', {
+      const res = await fetch('/api/v1/contacts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +237,7 @@ const AdminDashboard: React.FC = () => {
   // Status Change Handler
   const handleStatusChange = async (contactId: number, newStatus: string) => {
     try {
-      const res = await fetch(`/api/admin/contacts/${contactId}`, {
+      const res = await fetch(`/api/v1/contacts/${contactId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -240,12 +253,12 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Open 1-on-1 Email Modal
-  const openEmailModal = (contact: Lead) => {
+  // Open 1-on-1 Email Modal (defaulting to Welcome & Intro or Demo)
+  const openEmailModal = (contact: Lead, defaultTplId = 'welcome_introduction') => {
     setSelectedContact(contact);
-    setEmailTemplateId('google_meet_demo');
-    const tpl = templates.find(t => t.id === 'google_meet_demo') || templates[0];
-    setEmailSubject(tpl ? tpl.subject : 'Schedule Your MyTradingToolbox Demo');
+    setEmailTemplateId(defaultTplId);
+    const tpl = templates.find(t => t.id === defaultTplId) || templates[0];
+    setEmailSubject(tpl ? tpl.subject : 'Welcome to MyTradingToolbox');
     setEmailCustomBody('');
     setEmailFeedback(null);
     setIsEmailModalOpen(true);
@@ -261,7 +274,7 @@ const AdminDashboard: React.FC = () => {
     localStorage.setItem('saved_meet_url', emailGoogleMeetUrl);
 
     try {
-      const res = await fetch('/api/admin/email/send-one', {
+      const res = await fetch('/api/v1/campaigns/send-one', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -281,6 +294,12 @@ const AdminDashboard: React.FC = () => {
       const data = await res.json();
       if (res.ok) {
         setEmailFeedback({ type: 'success', text: `Email successfully sent to ${selectedContact.email}!` });
+        
+        // Auto-advance status if sent Welcome & Intro
+        if (emailTemplateId === 'welcome_introduction' && selectedContact.status === 'lead') {
+          handleStatusChange(selectedContact.id, 'intro_sent');
+        }
+        
         fetchData(password);
       } else {
         setEmailFeedback({ type: 'error', text: data.error || 'Failed to send email' });
@@ -301,7 +320,7 @@ const AdminDashboard: React.FC = () => {
     setBroadcastResult(null);
 
     try {
-      const res = await fetch('/api/admin/email/broadcast', {
+      const res = await fetch('/api/v1/campaigns/broadcast', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -343,7 +362,7 @@ const AdminDashboard: React.FC = () => {
 
     setAddingNote(true);
     try {
-      const res = await fetch(`/api/admin/contacts/${selectedContact.id}/notes`, {
+      const res = await fetch(`/api/v1/contacts/${selectedContact.id}/notes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,7 +401,7 @@ const AdminDashboard: React.FC = () => {
   const pipelineMetrics = {
     total: leads.length,
     newLeads: leads.filter(l => l.status === 'lead').length,
-    contacted: leads.filter(l => l.status === 'contacted').length,
+    introSent: leads.filter(l => l.status === 'intro_sent').length,
     demos: leads.filter(l => l.status === 'demo_scheduled' || l.status === 'demo_requested').length,
     customers: leads.filter(l => l.status === 'customer').length,
     unsubscribed: leads.filter(l => l.is_unsubscribed || l.status === 'unsubscribed').length
@@ -404,7 +423,7 @@ const AdminDashboard: React.FC = () => {
             <ShieldAlert className="text-blue-400 w-6 h-6" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white mb-2">MyTradingToolbox CRM</h1>
-          <p className="text-slate-400 text-sm mb-6">Enter admin password to access pipeline, outreach & demo scheduling.</p>
+          <p className="text-slate-400 text-sm mb-6">Enter admin password to access pipeline, discovery & demo outreach.</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -456,7 +475,7 @@ const AdminDashboard: React.FC = () => {
                   Pro Suite
                 </span>
               </div>
-              <p className="text-slate-400 text-xs mt-0.5">Manage interested traders, send demo invitations, and track pipeline conversions.</p>
+              <p className="text-slate-400 text-xs mt-0.5">Welcome intros, discovery questionnaires, Google Meet demos & conversions.</p>
             </div>
           </div>
 
@@ -498,11 +517,11 @@ const AdminDashboard: React.FC = () => {
 
           <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-4 rounded-2xl">
             <div className="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
-              <span>New / Uncontacted</span>
-              <Clock className="w-4 h-4 text-amber-400" />
+              <span>Welcome / Intro Sent</span>
+              <Clock className="w-4 h-4 text-teal-400" />
             </div>
-            <div className="text-2xl md:text-3xl font-black text-amber-300">{pipelineMetrics.newLeads}</div>
-            <div className="text-[10px] text-amber-400/80 mt-1">Needs outreach</div>
+            <div className="text-2xl md:text-3xl font-black text-teal-300">{pipelineMetrics.introSent}</div>
+            <div className="text-[10px] text-teal-400/80 mt-1">Discovery questions active</div>
           </div>
 
           <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-4 rounded-2xl">
@@ -591,6 +610,7 @@ const AdminDashboard: React.FC = () => {
                 >
                   <option value="all">All Pipeline Stages</option>
                   <option value="lead">New Leads</option>
+                  <option value="intro_sent">Intro Sent 💬</option>
                   <option value="contacted">Contacted</option>
                   <option value="demo_requested">Demo Requested</option>
                   <option value="demo_scheduled">Demo Scheduled</option>
@@ -620,7 +640,7 @@ const AdminDashboard: React.FC = () => {
                       <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">Contact / Email</th>
                       <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">Pipeline Stage</th>
                       <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">Tool Interests</th>
-                      <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">Notes & History</th>
+                      <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400">Discovery & Notes</th>
                       <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-widest text-slate-400 text-right">Outreach Actions</th>
                     </tr>
                   </thead>
@@ -643,8 +663,8 @@ const AdminDashboard: React.FC = () => {
                                 <div className="text-xs text-slate-400 flex items-center gap-2">
                                   <span>{lead.email}</span>
                                   {lead.source && (
-                                    <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded border border-white/5">
-                                      {lead.source}
+                                    <span className="text-[10px] bg-slate-800 text-blue-300 px-1.5 py-0.2 rounded border border-white/5">
+                                      {DISCOVERY_SOURCES.find(s => s.id === lead.source)?.label || lead.source}
                                     </span>
                                   )}
                                 </div>
@@ -660,6 +680,7 @@ const AdminDashboard: React.FC = () => {
                                 className={`text-xs font-bold px-3 py-1.5 rounded-xl border appearance-none pr-8 cursor-pointer focus:outline-none transition-all ${stConfig.bg} ${stConfig.text} ${stConfig.border}`}
                               >
                                 <option value="lead">New Lead</option>
+                                <option value="intro_sent">Intro Sent 💬</option>
                                 <option value="contacted">Contacted</option>
                                 <option value="demo_requested">Demo Requested</option>
                                 <option value="demo_scheduled">Demo Scheduled 📹</option>
@@ -702,13 +723,24 @@ const AdminDashboard: React.FC = () => {
                                   Opted Out
                                 </span>
                               ) : (
-                                <button 
-                                  onClick={() => openEmailModal(lead)}
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/30 transition-all shadow-sm active:scale-95 cursor-pointer"
-                                >
-                                  <Mail className="w-3.5 h-3.5" />
-                                  <span>Email / Demo</span>
-                                </button>
+                                <div className="flex items-center gap-1.5">
+                                  <button 
+                                    onClick={() => openEmailModal(lead, 'welcome_introduction')}
+                                    title="Send Welcome & Discovery Introduction Email"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-teal-600/20 hover:bg-teal-600 text-teal-300 hover:text-white border border-teal-500/30 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                  >
+                                    <HelpCircle className="w-3.5 h-3.5" />
+                                    <span>Welcome & Intro</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => openEmailModal(lead, 'google_meet_demo')}
+                                    title="Send Google Meet Demo Invitation"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/30 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                  >
+                                    <Video className="w-3.5 h-3.5" />
+                                    <span>Demo Invite</span>
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </td>
@@ -792,6 +824,7 @@ const AdminDashboard: React.FC = () => {
                     >
                       <option value="all">All Active Subscribers</option>
                       <option value="lead">New Leads Only</option>
+                      <option value="intro_sent">Intro Sent Contacts</option>
                       <option value="contacted">Contacted Leads</option>
                       <option value="demo_requested">Demo Requested</option>
                       <option value="customer">Existing Customers</option>
@@ -863,16 +896,16 @@ const AdminDashboard: React.FC = () => {
                 </h3>
                 <ul className="text-xs text-slate-400 space-y-3 leading-relaxed">
                   <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <span><strong>15-Minute Google Meet Demos:</strong> High conversion rate for options traders when walking through live Opus trade breakdowns.</span>
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                    <span><strong>Welcome & Discovery Intro:</strong> High reply rate asking how they found you and what strategies they run.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <span><strong>Feature Drops:</strong> Sending regular updates keeps leads warm and showcases rapid platform development.</span>
+                    <span><strong>15-Minute Google Meet Demos:</strong> High conversion rate for income traders when walking through live trade setups.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <span><strong>Founder Check-Ins:</strong> Personalized emails from Keith Thompson drive genuine replies and valuable product feedback.</span>
+                    <span><strong>Founder Touchpoints:</strong> Personal emails from Keith Thompson build long-term trust and loyalty.</span>
                   </li>
                 </ul>
               </div>
@@ -929,7 +962,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-white">Add Interested Lead</h2>
-                  <p className="text-xs text-slate-400">Record a new prospect directly into your CRM pipeline.</p>
+                  <p className="text-xs text-slate-400">Record a new prospect with their discovery source and tool preferences.</p>
                 </div>
               </div>
 
@@ -972,6 +1005,7 @@ const AdminDashboard: React.FC = () => {
                       className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none cursor-pointer"
                     >
                       <option value="lead">New Lead</option>
+                      <option value="intro_sent">Intro Sent 💬</option>
                       <option value="contacted">Contacted</option>
                       <option value="demo_requested">Demo Requested</option>
                       <option value="demo_scheduled">Demo Scheduled</option>
@@ -981,17 +1015,16 @@ const AdminDashboard: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Source
+                      How Did They Find You?
                     </label>
                     <select
                       value={newContactSource}
                       onChange={(e) => setNewContactSource(e.target.value)}
                       className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none cursor-pointer"
                     >
-                      <option value="referral">Referral / Word of Mouth</option>
-                      <option value="manual_admin">Direct Outreach</option>
-                      <option value="waitlist">Website Waitlist</option>
-                      <option value="trading_group">Discord / Trading Group</option>
+                      {DISCOVERY_SOURCES.map(source => (
+                        <option key={source.id} value={source.id}>{source.label}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1030,7 +1063,7 @@ const AdminDashboard: React.FC = () => {
                     rows={2}
                     value={newContactNote}
                     onChange={(e) => setNewContactNote(e.target.value)}
-                    placeholder="e.g. Discussed covered call scanner on phone, interested in demo this Thursday..."
+                    placeholder="e.g. Trader interested in covered call scanner, asked about Tradier connectivity..."
                     className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -1059,7 +1092,7 @@ const AdminDashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* MODAL 2: 1-ON-1 EMAIL COMPOSER & GOOGLE MEET DEMO INVITATION */}
+      {/* MODAL 2: 1-ON-1 EMAIL COMPOSER */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {isEmailModalOpen && selectedContact && (
