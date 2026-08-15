@@ -1,5 +1,6 @@
-import { emailService, EMAIL_TEMPLATES } from '../services/email.service.js';
+import { emailService } from '../services/email.service.js';
 import { contactRepository } from '../db/repositories/contact.repository.js';
+import { config } from '../config/env.js';
 
 function getAppBaseUrl(req) {
   if (process.env.APP_URL) return process.env.APP_URL;
@@ -9,8 +10,55 @@ function getAppBaseUrl(req) {
 }
 
 export class CampaignsController {
-  getTemplates(req, res) {
-    res.json(EMAIL_TEMPLATES);
+  async getTemplates(req, res) {
+    const templates = await emailService.getAllTemplates();
+    res.json(templates);
+  }
+
+  async updateTemplate(req, res) {
+    const { id } = req.params;
+    const template = await emailService.saveTemplate(id, req.body);
+    res.json({ success: true, template });
+  }
+
+  async createTemplate(req, res) {
+    const template = await emailService.createCustomTemplate(req.body);
+    res.json({ success: true, template });
+  }
+
+  async resetTemplate(req, res) {
+    const { id } = req.params;
+    const template = await emailService.resetTemplateToDefault(id);
+    if (!template) return res.status(404).json({ success: false, error: 'Default template not found' });
+    res.json({ success: true, template });
+  }
+
+  async deleteTemplate(req, res) {
+    const { id } = req.params;
+    await emailService.deleteTemplate(id);
+    res.json({ success: true });
+  }
+
+  async testSend(req, res) {
+    const { templateId, customSubject, customBody, targetEmail, googleMeetUrl } = req.body;
+    const recipient = targetEmail || config.adminEmail;
+    const baseUrl = getAppBaseUrl(req);
+
+    const result = await emailService.sendDirectCrmEmail({
+      toEmail: recipient,
+      name: 'Admin Test',
+      templateId,
+      customSubject: customSubject ? `[TEST] ${customSubject}` : undefined,
+      customBody,
+      googleMeetUrl,
+      appBaseUrl: baseUrl
+    });
+
+    if (result.success) {
+      res.json({ success: true, message: `Test email dispatched to ${recipient}` });
+    } else {
+      res.status(500).json({ success: false, error: result.error || 'Failed to dispatch test email' });
+    }
   }
 
   async sendOne(req, res) {
@@ -37,7 +85,8 @@ export class CampaignsController {
     if (result.success) {
       await contactRepository.recordPromotionalContact(email);
       if (contact) {
-        const templateName = EMAIL_TEMPLATES.find(t => t.id === templateId)?.name || 'Custom Email';
+        const tpl = await emailService.getTemplateById(templateId);
+        const templateName = tpl?.name || 'Custom Email';
         await contactRepository.appendNote(contact.id, `Sent Email: "${templateName}" with Google Meet link.`);
       }
       res.json({ success: true, message: `Email dispatched to ${email}` });

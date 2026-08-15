@@ -19,7 +19,15 @@ import {
   X, 
   ChevronDown, 
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  Edit3,
+  Eye,
+  RotateCcw,
+  Trash2,
+  Code,
+  Smartphone,
+  Monitor,
+  Check
 } from 'lucide-react';
 
 interface Note {
@@ -51,8 +59,9 @@ interface EmailTemplate {
   category: string;
   subject: string;
   description: string;
-  defaultMeetUrl: string;
+  default_meet_url?: string;
   body: string;
+  is_system?: boolean;
 }
 
 interface Stats {
@@ -114,7 +123,27 @@ const AdminDashboard: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isTemplateEditorOpen, setIsTemplateEditorOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Lead | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+
+  // Template Editor Form State
+  const [editTemplateId, setEditTemplateId] = useState('');
+  const [editTemplateName, setEditTemplateName] = useState('');
+  const [editTemplateCategory, setEditTemplateCategory] = useState('');
+  const [editTemplateSubject, setEditTemplateSubject] = useState('');
+  const [editTemplateDesc, setEditTemplateDesc] = useState('');
+  const [editTemplateBody, setEditTemplateBody] = useState('');
+  const [editTemplateMeetUrl, setEditTemplateMeetUrl] = useState('');
+  const [isEditModeNew, setIsEditModeNew] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateFeedback, setTemplateFeedback] = useState<string | null>(null);
+
+  // Preview State
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [testSending, setTestSending] = useState(false);
+  const [testSendResult, setTestSendResult] = useState<string | null>(null);
 
   // Add Contact Form State
   const [newContactName, setNewContactName] = useState('');
@@ -253,7 +282,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Open 1-on-1 Email Modal (defaulting to Welcome & Intro or Demo)
+  // Open 1-on-1 Email Modal
   const openEmailModal = (contact: Lead, defaultTplId = 'welcome_introduction') => {
     setSelectedContact(contact);
     setEmailTemplateId(defaultTplId);
@@ -295,7 +324,6 @@ const AdminDashboard: React.FC = () => {
       if (res.ok) {
         setEmailFeedback({ type: 'success', text: `Email successfully sent to ${selectedContact.email}!` });
         
-        // Auto-advance status if sent Welcome & Intro
         if (emailTemplateId === 'welcome_introduction' && selectedContact.status === 'lead') {
           handleStatusChange(selectedContact.id, 'intro_sent');
         }
@@ -346,6 +374,173 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setBroadcastSending(false);
     }
+  };
+
+  // Template Management Handlers
+  const openTemplateEditor = (tpl?: EmailTemplate) => {
+    if (tpl) {
+      setIsEditModeNew(false);
+      setEditTemplateId(tpl.id);
+      setEditTemplateName(tpl.name);
+      setEditTemplateCategory(tpl.category || 'General');
+      setEditTemplateSubject(tpl.subject);
+      setEditTemplateDesc(tpl.description || '');
+      setEditTemplateBody(tpl.body || '');
+      setEditTemplateMeetUrl(tpl.default_meet_url || 'https://meet.google.com/new');
+      setSelectedTemplate(tpl);
+    } else {
+      setIsEditModeNew(true);
+      setEditTemplateId('custom_' + Date.now());
+      setEditTemplateName('New Outreach Campaign');
+      setEditTemplateCategory('Custom Campaign');
+      setEditTemplateSubject('Exclusive Trading Update from MyTradingToolbox');
+      setEditTemplateDesc('Custom targeted email campaign for traders.');
+      setEditTemplateBody(`<p>Hi {{name}},</p>\n<p>Enter your custom message here...</p>\n<div style="text-align: center; margin: 24px 0;"><a href="{{meet_url}}" style="background: #0284c7; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Schedule Call &rarr;</a></div>`);
+      setEditTemplateMeetUrl('https://meet.google.com/new');
+      setSelectedTemplate(null);
+    }
+    setTemplateFeedback(null);
+    setIsTemplateEditorOpen(true);
+  };
+
+  const handleSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingTemplate(true);
+    setTemplateFeedback(null);
+
+    const payload = {
+      name: editTemplateName,
+      category: editTemplateCategory,
+      subject: editTemplateSubject,
+      description: editTemplateDesc,
+      body: editTemplateBody,
+      defaultMeetUrl: editTemplateMeetUrl
+    };
+
+    try {
+      const url = isEditModeNew ? '/api/v1/campaigns/templates' : `/api/v1/campaigns/templates/${editTemplateId}`;
+      const method = isEditModeNew ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setTemplateFeedback('Template saved successfully!');
+        fetchData(password);
+        setTimeout(() => setIsTemplateEditorOpen(false), 1200);
+      } else {
+        setTemplateFeedback(`Error: ${data.error || 'Failed to save template'}`);
+      }
+    } catch (err: any) {
+      setTemplateFeedback(`Error: ${err.message}`);
+    } finally {
+      setSavingTemplate(false);
+    }
+  };
+
+  const handleResetTemplate = async (id: string) => {
+    const confirmed = window.confirm('Reset this template back to its default copy?');
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/v1/campaigns/templates/${id}/reset`, {
+        method: 'POST',
+        headers: { 'x-admin-password': password }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEditTemplateName(data.template.name);
+        setEditTemplateSubject(data.template.subject);
+        setEditTemplateDesc(data.template.description);
+        setEditTemplateBody(data.template.body);
+        setTemplateFeedback('Reset to default copy successfully!');
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error('Failed to reset template', err);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this custom template?');
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/v1/campaigns/templates/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password }
+      });
+      if (res.ok) {
+        setIsTemplateEditorOpen(false);
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const openPreview = (tpl: EmailTemplate) => {
+    setSelectedTemplate(tpl);
+    setTestSendResult(null);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleTestSend = async (templateId: string) => {
+    setTestSending(true);
+    setTestSendResult(null);
+    try {
+      const res = await fetch('/api/v1/campaigns/templates/test-send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({ templateId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestSendResult(data.message || 'Test email sent successfully to admin email!');
+      } else {
+        setTestSendResult(`Error: ${data.error || 'Failed to dispatch test email'}`);
+      }
+    } catch (err: any) {
+      setTestSendResult(`Error: ${err.message}`);
+    } finally {
+      setTestSending(false);
+    }
+  };
+
+  const renderSimulatedHtml = (bodyHtml: string, meetUrl?: string) => {
+    let rendered = (bodyHtml || '')
+      .replace(/\{\{name\}\}/g, 'Alex Trader')
+      .replace(/\{\{email\}\}/g, 'trader@example.com')
+      .replace(/\{\{meet_url\}\}/g, meetUrl || 'https://meet.google.com/demo-sample')
+      .replace(/\{\{unsubscribe_url\}\}/g, '#');
+
+    return `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #02040c; padding: 20px; color: #f8fafc;">
+        <div style="max-width: 580px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden;">
+          <div style="padding: 20px 24px; border-bottom: 1px solid #1e293b; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+            <span style="font-size: 18px; font-weight: 900; color: #38bdf8;">MyTradingToolbox</span>
+            <span style="display: block; font-size: 11px; color: #94a3b8; margin-top: 2px;">Professional Suite for Income & Options Traders</span>
+          </div>
+          <div style="padding: 24px; font-size: 14px; line-height: 1.6; color: #e2e8f0;">
+            ${rendered}
+          </div>
+          <div style="padding: 18px 24px; background-color: #090d16; border-top: 1px solid #1e293b; text-align: center; font-size: 11px; color: #64748b;">
+            <p style="margin: 0 0 6px 0;">This email was sent to trader@example.com</p>
+            <p style="margin: 0;"><span style="color: #38bdf8; text-decoration: underline;">Unsubscribe / Manage Preferences</span></p>
+          </div>
+        </div>
+      </div>
+    `;
   };
 
   // Open Notes Modal
@@ -475,7 +670,7 @@ const AdminDashboard: React.FC = () => {
                   Pro Suite
                 </span>
               </div>
-              <p className="text-slate-400 text-xs mt-0.5">Welcome intros, discovery questionnaires, Google Meet demos & conversions.</p>
+              <p className="text-slate-400 text-xs mt-0.5">Welcome intros, discovery questionnaires, template editor & Google Meet demos.</p>
             </div>
           </div>
 
@@ -913,26 +1108,76 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 3: EMAIL TEMPLATES */}
+        {/* TAB 3: EMAIL TEMPLATES (NOW WITH EDIT, PREVIEW, TEST SEND, & NEW TEMPLATE) */}
         {activeTab === 'templates' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {templates.map(tpl => (
-              <div key={tpl.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-3xl flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      {tpl.category}
-                    </span>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-3xl">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Sparkles className="text-blue-400 w-5 h-5" /> Email Template Manager & Editor
+                </h2>
+                <p className="text-slate-400 text-xs mt-1">
+                  Customize subject lines, email copy, and call-to-actions, or build new marketing campaigns.
+                </p>
+              </div>
+              <button
+                onClick={() => openTemplateEditor()}
+                className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Create New Template
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {templates.map(tpl => (
+                <div key={tpl.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 p-6 rounded-3xl flex flex-col justify-between space-y-4 hover:border-white/10 transition-all group">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        {tpl.category}
+                      </span>
+                      {tpl.is_system && (
+                        <span className="text-[10px] font-semibold text-slate-500">
+                          System Template
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-base font-bold text-white mb-1">{tpl.name}</h3>
+                    <p className="text-xs text-slate-400 mb-3 line-clamp-2">{tpl.description}</p>
+                    
+                    <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 text-xs text-slate-300 mb-2">
+                      <span className="text-slate-500 font-semibold">Subject: </span>
+                      {tpl.subject}
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1">{tpl.name}</h3>
-                  <p className="text-xs text-slate-400 mb-3">{tpl.description}</p>
-                  <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 text-xs text-slate-300">
-                    <span className="text-slate-500 font-semibold">Subject: </span>
-                    {tpl.subject}
+
+                  <div className="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openPreview(tpl)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-white/5 transition-all cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-blue-400" /> Preview
+                      </button>
+                      <button
+                        onClick={() => handleTestSend(tpl.id)}
+                        disabled={testSending}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-white/5 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <Send className="w-3.5 h-3.5 text-indigo-400" /> Test Send
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => openTemplateEditor(tpl)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-xl text-xs font-bold border border-blue-500/30 transition-all cursor-pointer active:scale-95"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Edit Template
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -1231,7 +1476,318 @@ const AdminDashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* ========================================================================= */}
-      {/* MODAL 3: NOTES & ACTIVITY HISTORY */}
+      {/* MODAL 3: INTERACTIVE TEMPLATE EDITOR (NEW!) */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isTemplateEditorOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-5xl w-full shadow-2xl relative max-h-[95vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setIsTemplateEditorOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-blue-500/20 rounded-xl text-blue-400">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    {isEditModeNew ? 'Create New Email Template' : `Edit Template: ${editTemplateName}`}
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Customize your subject line, copy, dynamic tags, and HTML styling.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveTemplate} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Template Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editTemplateName}
+                      onChange={(e) => setEditTemplateName(e.target.value)}
+                      placeholder="e.g. VIP Beta Access"
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={editTemplateCategory}
+                      onChange={(e) => setEditTemplateCategory(e.target.value)}
+                      placeholder="e.g. Onboarding, Sales, Promo"
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Default Google Meet / Booking URL
+                    </label>
+                    <input
+                      type="url"
+                      value={editTemplateMeetUrl}
+                      onChange={(e) => setEditTemplateMeetUrl(e.target.value)}
+                      placeholder="https://meet.google.com/..."
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Email Subject Line *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editTemplateSubject}
+                    onChange={(e) => setEditTemplateSubject(e.target.value)}
+                    placeholder="Subject..."
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Description (Internal Notes)
+                  </label>
+                  <input
+                    type="text"
+                    value={editTemplateDesc}
+                    onChange={(e) => setEditTemplateDesc(e.target.value)}
+                    placeholder="Short description of when to use this template..."
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none"
+                  />
+                </div>
+
+                {/* Variable Tags Assistant */}
+                <div className="bg-slate-950/60 p-3 rounded-2xl border border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 text-slate-400 font-semibold">
+                    <Code className="w-4 h-4 text-blue-400" /> Click tag to insert at bottom:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {['{{name}}', '{{email}}', '{{meet_url}}', '{{unsubscribe_url}}'].map(tag => (
+                      <button
+                        type="button"
+                        key={tag}
+                        onClick={() => setEditTemplateBody(prev => prev + ' ' + tag)}
+                        className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/30 transition-colors cursor-pointer text-xs font-mono"
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Split Screen Editor & Live Preview */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      HTML / Email Body Content *
+                    </label>
+                    <textarea
+                      rows={14}
+                      required
+                      value={editTemplateBody}
+                      onChange={(e) => setEditTemplateBody(e.target.value)}
+                      placeholder="<p>Hi {{name}},</p>..."
+                      className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-xs text-slate-200 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                      <span>Real-Time Simulated Render</span>
+                      <span className="text-[10px] text-emerald-400 font-normal">Live Preview</span>
+                    </label>
+                    <div className="bg-slate-950 border border-white/10 rounded-2xl p-2 h-[300px] lg:h-[320px] overflow-y-auto shadow-inner">
+                      <div 
+                        dangerouslySetInnerHTML={{ 
+                          __html: renderSimulatedHtml(editTemplateBody, editTemplateMeetUrl) 
+                        }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {templateFeedback && (
+                  <div className={`p-3 rounded-xl text-xs font-semibold ${
+                    templateFeedback.includes('Error')
+                      ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                      : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                  }`}>
+                    {templateFeedback}
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {!isEditModeNew && selectedTemplate?.is_system && (
+                      <button
+                        type="button"
+                        onClick={() => handleResetTemplate(editTemplateId)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-white/5 transition-all cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-amber-400" /> Reset to Factory Default
+                      </button>
+                    )}
+                    {!isEditModeNew && !selectedTemplate?.is_system && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTemplate(editTemplateId)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-semibold border border-red-500/20 transition-all cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete Template
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsTemplateEditorOpen(false)}
+                      className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={savingTemplate}
+                      className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {savingTemplate ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      Save Template Changes
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL 4: LIVE EMAIL PREVIEW MODAL */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isPreviewModalOpen && selectedTemplate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-white/5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      {selectedTemplate.category}
+                    </span>
+                    <h2 className="text-lg font-bold text-white">{selectedTemplate.name}</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Subject: <strong className="text-slate-200">{selectedTemplate.subject}</strong>
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPreviewDevice('desktop')}
+                    className={`p-2 rounded-xl border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                      previewDevice === 'desktop'
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-slate-950 border-white/10 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Monitor className="w-4 h-4" /> Desktop
+                  </button>
+                  <button
+                    onClick={() => setPreviewDevice('mobile')}
+                    className={`p-2 rounded-xl border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                      previewDevice === 'mobile'
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-slate-950 border-white/10 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" /> Mobile
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-center mb-6">
+                <div className={`transition-all ${previewDevice === 'mobile' ? 'max-w-sm' : 'w-full'}`}>
+                  <div 
+                    className="rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+                    dangerouslySetInnerHTML={{ 
+                      __html: renderSimulatedHtml(selectedTemplate.body, selectedTemplate.default_meet_url) 
+                    }} 
+                  />
+                </div>
+              </div>
+
+              {testSendResult && (
+                <div className={`mb-4 p-3 rounded-xl text-xs font-semibold ${
+                  testSendResult.startsWith('Error')
+                    ? 'bg-red-500/10 text-red-300 border border-red-500/20'
+                    : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                }`}>
+                  {testSendResult}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                <button
+                  onClick={() => {
+                    setIsPreviewModalOpen(false);
+                    openTemplateEditor(selectedTemplate);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-white/5 transition-all cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-blue-400" /> Edit This Template
+                </button>
+
+                <button
+                  onClick={() => handleTestSend(selectedTemplate.id)}
+                  disabled={testSending}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  {testSending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Send Test Email to Me
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================================= */}
+      {/* MODAL 5: NOTES & ACTIVITY HISTORY */}
       {/* ========================================================================= */}
       <AnimatePresence>
         {isNotesModalOpen && selectedContact && (

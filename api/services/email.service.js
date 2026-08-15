@@ -1,160 +1,89 @@
 import { config } from '../config/env.js';
-
-export const EMAIL_TEMPLATES = [
-  {
-    id: 'welcome_introduction',
-    name: 'Welcome & Introduction (Discovery & Strategy)',
-    category: 'Onboarding & Discovery',
-    subject: 'Welcome to MyTradingToolbox — quick hello from Keith',
-    description: 'Friendly intro asking how they found you, what strategies they trade, specific questions to answer by email, and offering an optional live Google Meet.',
-    defaultMeetUrl: config.defaultMeetUrl,
-    body: `
-      <p>Hi {{name}},</p>
-      <p>I'm Keith Thompson, the creator behind <strong>MyTradingToolbox</strong>. I wanted to personally reach out, say hello, and welcome you to our trading community!</p>
-      
-      <p>We engineered these tools specifically for active income and options traders who want clearer data, automated cash flow forecasting, and disciplined risk management.</p>
-
-      <div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
-        <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 15px;">I'd love to learn a little about you and your level of interest in options trading:</h3>
-        <ol style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
-          <li><strong>How did you find MyTradingToolbox?</strong> (A friend/referral, trader community, social media, or search?)</li>
-          <li><strong>What strategies are you currently running?</strong> (Covered calls, cash-secured puts, spreads, dividend growth, etc.)</li>
-          <li><strong>Do you have any specific questions about our tools</strong> that I can answer for you with a quick reply?</li>
-        </ol>
-      </div>
-
-      <p>You can simply <strong>hit Reply to this email</strong> and let me know—I read and respond to every email personally.</p>
-
-      <div style="background-color: #0f172a; padding: 18px 20px; border-radius: 12px; border: 1px dashed #334155; margin: 24px 0; text-align: center;">
-        <p style="color: #94a3b8; font-size: 13px; margin: 0 0 12px 0;">Prefer to chat live? I'd be happy to hop on a quick 10-15 minute Google Meet video call:</p>
-        <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px; box-shadow: 0 4px 12px rgba(2,132,199,0.3);">
-          Book / Join Quick Google Meet &rarr;
-        </a>
-      </div>
-
-      <p style="margin-bottom: 0;">Excited to have you with us,<br/><strong>Keith Thompson</strong><br/><span style="color: #64748b; font-size: 13px;">Founder, MyTradingToolbox</span></p>
-    `
-  },
-  {
-    id: 'google_meet_demo',
-    name: 'Google Meet 1-on-1 Demo Walkthrough',
-    category: 'Sales & Onboarding',
-    subject: 'Personal Invitation: 1-on-1 Walkthrough of MyTradingToolbox Suite',
-    description: 'Invite high-intent traders to an exclusive 1-on-1 Google Meet video call walkthrough of Opus, CashMap, and Alerting Engine.',
-    defaultMeetUrl: config.defaultMeetUrl,
-    body: `
-      <p>Hi {{name}},</p>
-      <p>Thanks for your interest in <strong>MyTradingToolbox</strong>! We are currently onboarding a select group of options and income traders to showcase our end-to-end execution and analytics suite.</p>
-      
-      <div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
-        <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 16px;">What We Will Cover in Your 15-Minute Google Meet Demo:</h3>
-        <ul style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
-          <li><strong>Opus Options Engine:</strong> Live analysis for covered calls, cash-secured puts, and multi-leg spreads with real-time Tradier connectivity.</li>
-          <li><strong>CashMap Planner:</strong> Automated cash flow forecasting combining option premium & dividend schedules.</li>
-          <li><strong>Real-Time Alert Engine:</strong> Strike breaches and implied expected move telemetry via SMS/email.</li>
-          <li><strong>AI Options Coach:</strong> Tailored position sizing and strategy adjustments.</li>
-        </ul>
-      </div>
-
-      <p>Would you have 15 minutes this week for a live walkthrough and to get direct access?</p>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; font-size: 15px; box-shadow: 0 4px 14px rgba(2,132,199,0.3);">
-          Join / Schedule Google Meet Demo &rarr;
-        </a>
-      </div>
-
-      <p style="color: #94a3b8; font-size: 14px;">If you prefer another time, feel free to reply directly to this email with what days work best for you.</p>
-    `
-  },
-  {
-    id: 'feature_announcement',
-    name: 'New Feature Drop & Tool Showcase',
-    category: 'Product Updates',
-    subject: 'New Tools Released: AI Options Coach, Stock Health & CashMap Integration',
-    description: 'Keep your users and leads engaged by showcasing new suite capabilities and improvements.',
-    defaultMeetUrl: config.defaultMeetUrl,
-    body: `
-      <p>Hi {{name}},</p>
-      <p>We've rolled out major upgrades across the <strong>MyTradingToolbox</strong> ecosystem designed to give income traders a decisive edge in volatile markets.</p>
-
-      <div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 20px 0;">
-        <h3 style="color: #2dd4bf; margin-top: 0; font-size: 16px;">Key Suite Highlights:</h3>
-        <div style="margin-bottom: 14px;">
-          <h4 style="color: #38bdf8; margin: 0 0 4px 0; font-size: 14px;">1. Opus AI Options Coach</h4>
-          <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.5;">Curated options strategy knowledge agent to assist in structuring covered calls, credit spreads, and risk mitigations.</p>
-        </div>
-        <div style="margin-bottom: 14px;">
-          <h4 style="color: #38bdf8; margin: 0 0 4px 0; font-size: 14px;">2. Stock Health Analysis & Daily Ingestion</h4>
-          <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.5;">Evaluates all publicly traded equities against S&P 500 benchmarks, sector peers, and DCF intrinsic valuations.</p>
-        </div>
-        <div>
-          <h4 style="color: #38bdf8; margin: 0 0 4px 0; font-size: 14px;">3. Direct CashMap & Alerts Synchronization</h4>
-          <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.5;">Seamlessly track realized options premium alongside automated SMS price and strike alerts.</p>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin: 28px 0;">
-        <a href="https://opus.mytradingtoolbox.com" style="background-color: #0284c7; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px; margin-right: 12px;">
-          Explore Opus Platform
-        </a>
-        <a href="{{meet_url}}" style="background-color: #334155; color: #f8fafc; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px;">
-          Book Live Video Demo
-        </a>
-      </div>
-    `
-  },
-  {
-    id: 'founder_outreach',
-    name: 'Personal Founder Check-In & Strategy Call',
-    category: 'Founder Outreach',
-    subject: 'Quick question regarding your trading workflow',
-    description: 'Personal, high-response rate email from the founder offering 1-on-1 strategy support and demo setup.',
-    defaultMeetUrl: config.defaultMeetUrl,
-    body: `
-      <p>Hi {{name}},</p>
-      <p>I noticed your interest in the MyTradingToolbox suite. I am the lead builder behind the platform, and I wanted to personally reach out.</p>
-      <p>Whether you're selling covered calls for monthly income, running cash-secured puts, or looking for cleaner risk telemetry, we engineered these tools specifically for active income traders.</p>
-      <p>I'd love to jump on a quick 10-minute Google Meet call to learn about your current setup, answer any questions, and give you early access.</p>
-      
-      <div style="text-align: center; margin: 25px 0;">
-        <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px;">
-          Click Here to Meet on Google Meet &rarr;
-        </a>
-      </div>
-
-      <p>Looking forward to connecting!</p>
-      <p style="margin-bottom: 0;">Best regards,<br/><strong>Keith Thompson</strong><br/><span style="color: #64748b; font-size: 13px;">Founder, MyTradingToolbox</span></p>
-    `
-  },
-  {
-    id: 'beta_access',
-    name: 'VIP Beta Access & Revenue Pitch',
-    category: 'Conversion & Sales',
-    subject: 'Your VIP Early Access to the MyTradingToolbox Suite',
-    description: 'High-converting invitation offering grandfathered access and private onboarding.',
-    defaultMeetUrl: config.defaultMeetUrl,
-    body: `
-      <p>Hi {{name}},</p>
-      <p>Your spot for early access to <strong>MyTradingToolbox</strong> is ready! As an early member, you will receive full access to our complete suite of trading engines:</p>
-      <ul style="color: #cbd5e1; line-height: 1.6; padding-left: 20px; font-size: 14px;">
-        <li>Full Opus Options Suite with Tradier one-click execution</li>
-        <li>CashMap Income Forecaster</li>
-        <li>Real-Time SMS Alert Engine & Volatility Insights</li>
-        <li>AI Options Strategy Coach</li>
-      </ul>
-      <p>We are hosting onboarding sessions this week on Google Meet to get your custom watchlists and strategies configured.</p>
-      
-      <div style="text-align: center; margin: 28px 0;">
-        <a href="{{meet_url}}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; font-size: 15px;">
-          Claim VIP Access & Schedule Onboarding &rarr;
-        </a>
-      </div>
-    `
-  }
-];
+import { query, DEFAULT_TEMPLATES } from '../db/connection.js';
 
 export class EmailService {
+  async getAllTemplates() {
+    try {
+      const res = await query('SELECT * FROM email_templates ORDER BY is_system DESC, name ASC');
+      if (res.rows && res.rows.length > 0) {
+        return res.rows;
+      }
+    } catch (err) {
+      console.warn('[EmailService] Error loading templates from DB:', err.message);
+    }
+    return DEFAULT_TEMPLATES;
+  }
+
+  async getTemplateById(id) {
+    const templates = await this.getAllTemplates();
+    return templates.find(t => t.id === id) || templates[0];
+  }
+
+  async saveTemplate(id, { name, category, subject, description, body, defaultMeetUrl }) {
+    const queryString = `
+      INSERT INTO email_templates (id, name, category, subject, description, body, default_meet_url, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+      ON CONFLICT (id) 
+      DO UPDATE SET 
+        name = EXCLUDED.name,
+        category = EXCLUDED.category,
+        subject = EXCLUDED.subject,
+        description = EXCLUDED.description,
+        body = EXCLUDED.body,
+        default_meet_url = EXCLUDED.default_meet_url,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *;
+    `;
+    const res = await query(queryString, [
+      id, 
+      name, 
+      category || 'General', 
+      subject, 
+      description || '', 
+      body, 
+      defaultMeetUrl || config.defaultMeetUrl
+    ]);
+    return res.rows[0];
+  }
+
+  async createCustomTemplate({ name, category, subject, description, body, defaultMeetUrl }) {
+    const id = 'custom_' + Date.now();
+    const queryString = `
+      INSERT INTO email_templates (id, name, category, subject, description, body, default_meet_url, is_system)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, false)
+      RETURNING *;
+    `;
+    const res = await query(queryString, [
+      id, 
+      name, 
+      category || 'Custom Campaign', 
+      subject, 
+      description || '', 
+      body, 
+      defaultMeetUrl || config.defaultMeetUrl
+    ]);
+    return res.rows[0];
+  }
+
+  async resetTemplateToDefault(id) {
+    const def = DEFAULT_TEMPLATES.find(t => t.id === id);
+    if (!def) return null;
+
+    return this.saveTemplate(id, {
+      name: def.name,
+      category: def.category,
+      subject: def.subject,
+      description: def.description,
+      body: def.body,
+      defaultMeetUrl: def.default_meet_url
+    });
+  }
+
+  async deleteTemplate(id) {
+    await query('DELETE FROM email_templates WHERE id = $1 AND is_system = false', [id]);
+    return { success: true };
+  }
+
   buildFullHtml({ content, unsubscribeUrl, recipientEmail }) {
     return `
       <!DOCTYPE html>
@@ -217,7 +146,7 @@ export class EmailService {
 
   async sendRawEmail({ to, fromAlias = config.welcomeSender, subject, htmlBody }) {
     if (!config.resendApiKey) {
-      console.warn('[Email] RESEND_API_KEY is missing. Email simulated.');
+      console.warn('[Email] RESEND_API_KEY is missing. Email simulated in mock mode.');
       return { success: true, simulated: true, id: `mock-${Date.now()}` };
     }
 
@@ -253,7 +182,7 @@ export class EmailService {
   }
 
   async sendDirectCrmEmail({ toEmail, name = '', templateId = 'welcome_introduction', customSubject = '', customBody = '', googleMeetUrl, unsubscribeToken = '', appBaseUrl = config.defaultAppUrl }) {
-    const template = EMAIL_TEMPLATES.find(t => t.id === templateId) || EMAIL_TEMPLATES[0];
+    const template = await this.getTemplateById(templateId);
     const subject = customSubject || template.subject;
     const rawBody = customBody || template.body;
 
@@ -342,3 +271,4 @@ export class EmailService {
 }
 
 export const emailService = new EmailService();
+export const EMAIL_TEMPLATES = DEFAULT_TEMPLATES;
