@@ -15,7 +15,7 @@ export const EMAIL_TEMPLATES = [
       <p>We engineered these tools specifically for active income and options traders who want clearer data, automated cash flow forecasting, and disciplined risk management.</p>
 
       <div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
-        <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 15px;">I'd love to learn a little about your trading:</h3>
+        <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 15px;">I'd love to learn a little about you and your level of interest in options trading:</h3>
         <ol style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
           <li><strong>How did you find MyTradingToolbox?</strong> (A friend/referral, trader community, social media, or search?)</li>
           <li><strong>What strategies are you currently running?</strong> (Covered calls, cash-secured puts, spreads, dividend growth, etc.)</li>
