@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ToolCard from './components/ToolCard';
+import ItmBotLanding from './components/ItmBotLanding';
 import LeadCapture from './components/LeadCapture';
 import PartnerCard from './components/PartnerCard';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -178,7 +179,7 @@ const Home: React.FC = () => {
                   title="ITM Covered Call Strategy BOT"
                   description="Semi-automated strategy bot guiding traders through position risk analysis, capital management, and 100% risk-free paper trading for steady monthly stock income."
                   icon={Cpu}
-                  url="https://opus.mytradingtoolbox.com"
+                  url="/itm-covered-call-bot"
                 />
               </motion.div>
             </motion.div>
@@ -263,6 +264,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/itm-covered-call-bot" element={<ItmBotLanding />} />
+        <Route path="/bot" element={<ItmBotLanding />} />
         <Route path="/admin/*" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>

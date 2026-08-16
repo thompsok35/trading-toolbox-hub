@@ -1,5 +1,7 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, type LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface ToolCardProps {
     title: string;
@@ -43,6 +45,17 @@ const ToolCard: React.FC<ToolCardProps> = ({ title, description, icon: Icon, url
 
     if (isComingSoon) {
         return content;
+    }
+
+    // Internal client-side navigation
+    if (url && url.startsWith('/')) {
+        return (
+            <Link to={url} className="block">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    {content}
+                </motion.div>
+            </Link>
+        );
     }
 
     return (
