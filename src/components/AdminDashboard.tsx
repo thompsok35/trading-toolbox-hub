@@ -179,10 +179,12 @@ const AdminDashboard: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const [leadsRes, statsRes, templatesRes] = await Promise.all([
+      
+      const [leadsRes, statsRes, templatesRes, configRes] = await Promise.all([
         fetch('/api/v1/contacts', { headers: { 'x-admin-password': pw } }),
         fetch('/api/v1/analytics/stats', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/v1/campaigns/templates', { headers: { 'x-admin-password': pw } })
+        fetch('/api/v1/campaigns/templates', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/v1/campaigns/config', { headers: { 'x-admin-password': pw } })
       ]);
 
       if (leadsRes.status === 401) {
@@ -195,9 +197,17 @@ const AdminDashboard: React.FC = () => {
         throw new Error('Server returned an error');
       }
 
+      
       const leadsData = await leadsRes.json();
       const statsData = await statsRes.json();
       const templatesData = templatesRes.ok ? await templatesRes.json() : [];
+      if (configRes && configRes.ok) {
+        const cfg = await configRes.json();
+        if (cfg.defaultMeetUrl && cfg.defaultMeetUrl !== 'https://meet.google.com/new') {
+          setEmailGoogleMeetUrl(cfg.defaultMeetUrl);
+          localStorage.setItem('saved_meet_url', cfg.defaultMeetUrl);
+        }
+      }
 
       setLeads(Array.isArray(leadsData) ? leadsData : []);
       setStats(statsData);
@@ -283,11 +293,14 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Open 1-on-1 Email Modal
-  const openEmailModal = (contact: Lead, defaultTplId = 'welcome_introduction') => {
+    const openEmailModal = (contact: Lead, defaultTplId = 'welcome_introduction') => {
     setSelectedContact(contact);
     setEmailTemplateId(defaultTplId);
     const tpl = templates.find(t => t.id === defaultTplId) || templates[0];
     setEmailSubject(tpl ? tpl.subject : 'Welcome to MyTradingToolbox');
+    if (tpl && tpl.default_meet_url && tpl.default_meet_url !== 'https://meet.google.com/new') {
+      setEmailGoogleMeetUrl(tpl.default_meet_url);
+    }
     setEmailCustomBody('');
     setEmailFeedback(null);
     setIsEmailModalOpen(true);

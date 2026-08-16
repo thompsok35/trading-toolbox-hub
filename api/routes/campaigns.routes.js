@@ -6,6 +6,7 @@ const router = Router();
 
 router.use(adminAuth);
 
+router.get('/config', (req, res) => campaignsController.getConfig(req, res));
 router.get('/templates', (req, res) => campaignsController.getTemplates(req, res));
 router.post('/templates', (req, res) => campaignsController.createTemplate(req, res));
 router.put('/templates/:id', (req, res) => campaignsController.updateTemplate(req, res));

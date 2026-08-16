@@ -155,7 +155,7 @@ export class EmailService {
     `;
   }
 
-  renderTemplate(templateHtml, variables) {
+    renderTemplate(templateHtml, variables) {
     let rendered = templateHtml || '';
     
     // Clean name fallback
@@ -170,9 +170,15 @@ export class EmailService {
       }
     }
 
+    // Resolve meet URL: if provided URL is empty or generic, and env var is set, use env var
+    let resolvedMeetUrl = variables.meetUrl;
+    if (!resolvedMeetUrl || resolvedMeetUrl === 'https://meet.google.com/new' || resolvedMeetUrl.trim() === '') {
+      resolvedMeetUrl = config.defaultMeetUrl || 'https://meet.google.com/new';
+    }
+
     rendered = rendered.replace(/\{\{name\}\}/g, name);
     rendered = rendered.replace(/\{\{email\}\}/g, variables.email || '');
-    rendered = rendered.replace(/\{\{meet_url\}\}/g, variables.meetUrl || config.defaultMeetUrl);
+    rendered = rendered.replace(/\{\{meet_url\}\}/g, resolvedMeetUrl);
     rendered = rendered.replace(/\{\{unsubscribe_url\}\}/g, variables.unsubscribeUrl || '#');
     return rendered;
   }

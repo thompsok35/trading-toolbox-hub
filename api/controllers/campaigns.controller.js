@@ -10,9 +10,24 @@ function getAppBaseUrl(req) {
 }
 
 export class CampaignsController {
-  async getTemplates(req, res) {
+    async getTemplates(req, res) {
     const templates = await emailService.getAllTemplates();
-    res.json(templates);
+    // Return templates with active server default meet URL
+    const mapped = templates.map(t => ({
+      ...t,
+      default_meet_url: (t.default_meet_url && t.default_meet_url !== 'https://meet.google.com/new') 
+        ? t.default_meet_url 
+        : config.defaultMeetUrl
+    }));
+    res.json(mapped);
+  }
+
+  async getConfig(req, res) {
+    res.json({
+      defaultMeetUrl: config.defaultMeetUrl,
+      adminEmail: config.adminEmail,
+      welcomeSender: config.welcomeSender
+    });
   }
 
   async updateTemplate(req, res) {
