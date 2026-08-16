@@ -29,7 +29,7 @@ export const DEFAULT_TEMPLATES = [
     🤖 NEW FEATURE RELEASE &bull; LIVE ON PLATFORM
   </div>
   <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3;">
-    Master Consistent Monthly Income with the <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">ITM Covered Call Strategy BOT</span>
+    Master Consistent Monthly Income with the <span style="color: #38bdf8; font-weight: 800;">ITM Covered Call Strategy BOT</span>
   </h2>
   
   <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
@@ -143,7 +143,7 @@ export const DEFAULT_TEMPLATES = [
   </table>
 
   <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3; letter-spacing: -0.4px;">
-    Welcome to <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">MyTradingToolbox</span>!
+    Welcome to <span style="color: #38bdf8; font-weight: 800;">MyTradingToolbox</span>!
   </h2>
   
   <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
@@ -290,7 +290,7 @@ export const DEFAULT_TEMPLATES = [
     📹 VIP 1-on-1 Walkthrough
   </div>
   <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3;">
-    Personal Demo of <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">MyTradingToolbox Suite</span>
+    Personal Demo of <span style="color: #38bdf8; font-weight: 800;">MyTradingToolbox Suite</span>
   </h2>
   
   <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">

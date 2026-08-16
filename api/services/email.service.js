@@ -2,34 +2,22 @@ import { config } from '../config/env.js';
 import { query, DEFAULT_TEMPLATES } from '../db/connection.js';
 
 export class EmailService {
-    async getAllTemplates() {
+      async getAllTemplates() {
     try {
       const res = await query('SELECT * FROM email_templates ORDER BY is_system DESC, name ASC');
       if (res.rows && res.rows.length > 0) {
-        // Ensure any new system default templates (like ITM Covered Call BOT) are auto-inserted into DB
-        const existingIds = new Set(res.rows.map(r => r.id));
-        const missingDefaults = DEFAULT_TEMPLATES.filter(d => !existingIds.has(d.id));
-
-        if (missingDefaults.length > 0) {
-          console.log(`🌱 Auto-seeding ${missingDefaults.length} new system template(s) into database...`);
-          for (const tpl of missingDefaults) {
-            try {
-              await this.saveTemplate(tpl.id, {
-                name: tpl.name,
-                category: tpl.category,
-                subject: tpl.subject,
-                description: tpl.description,
-                body: tpl.body,
-                defaultMeetUrl: tpl.default_meet_url
-              });
-            } catch (e) {
-              console.warn('[EmailService] Failed to auto-seed template:', tpl.id, e.message);
-            }
+        // Auto-heal: update system templates if they contain incompatible gradient clips or are missing
+        for (const def of DEFAULT_TEMPLATES) {
+          const existing = res.rows.find(r => r.id === def.id);
+          if (!existing) {
+            await this.saveTemplate(def.id, def);
+          } else if (existing.is_system && existing.body && existing.body.includes('background-clip')) {
+            await this.saveTemplate(def.id, def);
           }
-          const refreshed = await query('SELECT * FROM email_templates ORDER BY is_system DESC, name ASC');
-          if (refreshed.rows && refreshed.rows.length > 0) return refreshed.rows;
         }
 
+        const refreshed = await query('SELECT * FROM email_templates ORDER BY is_system DESC, name ASC');
+        if (refreshed.rows && refreshed.rows.length > 0) return refreshed.rows;
         return res.rows;
       }
     } catch (err) {
