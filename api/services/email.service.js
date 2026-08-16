@@ -31,7 +31,7 @@ export class EmailService {
     return templates.find(t => t.id === id) || templates[0];
   }
 
-  async saveTemplate(id, { name, category, subject, description, body, defaultMeetUrl }) {
+    async saveTemplate(id, { name, category, subject, description, body, defaultMeetUrl, default_meet_url }) {
     const queryString = `
       INSERT INTO email_templates (id, name, category, subject, description, body, default_meet_url, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
@@ -53,7 +53,7 @@ export class EmailService {
       subject, 
       description || '', 
       body, 
-      defaultMeetUrl || config.defaultMeetUrl
+      defaultMeetUrl || default_meet_url || config.defaultMeetUrl
     ]);
     return res.rows[0];
   }
@@ -167,9 +167,13 @@ export class EmailService {
     `;
   }
 
-    renderTemplate(templateHtml, variables) {
+      renderTemplate(templateHtml, variables) {
     let rendered = templateHtml || '';
     
+    // Runtime Email Sanitizer: Strip out any email-incompatible background-clip or text gradients
+    rendered = rendered.replace(/background:\s*linear-gradient\([^)]+\);\s*-webkit-background-clip:\s*text;\s*/gi, '');
+    rendered = rendered.replace(/-webkit-background-clip:\s*text;\s*/gi, '');
+
     // Clean name fallback
     let name = variables.name;
     if (!name || name.trim().length === 0) {
@@ -182,7 +186,7 @@ export class EmailService {
       }
     }
 
-    // Resolve meet URL: if provided URL is empty or generic, and env var is set, use env var
+    // Resolve meet URL
     let resolvedMeetUrl = variables.meetUrl;
     if (!resolvedMeetUrl || resolvedMeetUrl === 'https://meet.google.com/new' || resolvedMeetUrl.trim() === '') {
       resolvedMeetUrl = config.defaultMeetUrl || 'https://meet.google.com/new';
