@@ -69,21 +69,23 @@ export class ContactRepository {
     return result.rows[0];
   }
 
-  async updateContact(id, updates) {
+      async updateContact(id, updates) {
     const current = await this.findById(id);
     if (!current) return null;
 
+    const email = updates.email !== undefined && updates.email.trim() !== '' ? updates.email.trim().toLowerCase() : current.email;
     const name = updates.name !== undefined ? updates.name : current.name;
     const status = updates.status !== undefined ? updates.status : current.status;
+    const source = updates.source !== undefined ? updates.source : current.source;
     const preferences = updates.preferences !== undefined ? updates.preferences : current.preferences;
 
     const queryString = `
       UPDATE leads 
-      SET name = $1, status = $2, preferences = $3 
-      WHERE id = $4 
+      SET email = $1, name = $2, status = $3, source = $4, preferences = $5 
+      WHERE id = $6 
       RETURNING *;
     `;
-    const result = await query(queryString, [name, status, JSON.stringify(preferences), id]);
+    const result = await query(queryString, [email, name, status, source, JSON.stringify(preferences), id]);
     return result.rows[0];
   }
 

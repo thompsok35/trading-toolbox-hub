@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, 
+  Users,
+  Edit2, 
   CheckCircle2, 
   Mail, 
   ShieldAlert, 
@@ -157,6 +158,15 @@ const AdminDashboard: React.FC = () => {
   const [newContactPrefs, setNewContactPrefs] = useState<string[]>([]);
   const [newContactNote, setNewContactNote] = useState('');
   const [addContactLoading, setAddContactLoading] = useState(false);
+  // Edit Contact Form State
+  const [isEditContactModalOpen, setIsEditContactModalOpen] = useState(false);
+  const [editingContactId, setEditingContactId] = useState<number | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editStatus, setEditStatus] = useState<Lead['status']>('lead');
+  const [editSource, setEditSource] = useState('website');
+  const [editPreferences, setEditPreferences] = useState<string[]>([]);
+  const [editSaving, setEditSaving] = useState(false);
 
   // Email Composer State
   const [emailTemplateId, setEmailTemplateId] = useState('welcome_introduction');
@@ -653,6 +663,53 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Add Note
+  
+  const openEditContactModal = (contact: Lead) => {
+    setEditingContactId(contact.id);
+    setEditName(contact.name || '');
+    setEditEmail(contact.email);
+    setEditStatus(contact.status || 'lead');
+    setEditSource(contact.source || 'website');
+    setEditPreferences(Array.isArray(contact.preferences) ? contact.preferences : []);
+    setIsEditContactModalOpen(true);
+  };
+
+  const handleSaveEditContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingContactId || !editEmail.trim()) return;
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/v1/contacts/${editingContactId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({
+          name: editName.trim(),
+          email: editEmail.trim(),
+          status: editStatus,
+          source: editSource,
+          preferences: editPreferences
+        })
+      });
+      if (res.ok) {
+        setIsEditContactModalOpen(false);
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error('Error updating contact:', err);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const toggleEditPreference = (toolId: string) => {
+    setEditPreferences(prev => 
+      prev.includes(toolId) ? prev.filter(t => t !== toolId) : [...prev, toolId]
+    );
+  };
+
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedContact || !newNoteText.trim()) return;
@@ -1216,6 +1273,13 @@ const AdminDashboard: React.FC = () => {
                                 </span>
                               ) : (
                                 <div className="flex items-center gap-1.5">
+                                  <button 
+                                    onClick={() => openEditContactModal(lead)}
+                                    title="Edit Contact Name, Email & Preferences"
+                                    className="inline-flex items-center justify-center p-1.5 rounded-xl bg-slate-950 hover:bg-teal-500/20 text-slate-400 hover:text-teal-300 border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer active:scale-95"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
                                   <button 
                                     onClick={() => openEmailModal(lead, 'welcome_introduction')}
                                     title="Send Welcome & Discovery Introduction Email"
@@ -2167,6 +2231,145 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+    
+      {/* ========================================================================= */}
+      {/* MODAL: EDIT CONTACT DETAILS */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {isEditContactModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative max-h-[92vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setIsEditContactModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-teal-500/20 rounded-xl text-teal-400 border border-teal-500/30">
+                  <Edit2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Edit Contact Details</h2>
+                  <p className="text-xs text-slate-400">Update name, email address, stage, or tool preferences.</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveEditContact} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Contact Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="e.g. John Doe or Trader Handle"
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="trader@example.com"
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Pipeline Stage
+                    </label>
+                    <select
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value as any)}
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none cursor-pointer"
+                    >
+                      <option value="lead">New Lead</option>
+                      <option value="intro_sent">Intro Sent 💬</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="demo_requested">Demo Requested 📹</option>
+                      <option value="demo_scheduled">Demo Scheduled 📅</option>
+                      <option value="customer">Customer / Subscriber ⚡</option>
+                      <option value="unsubscribed">Unsubscribed 🚫</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Discovery Source
+                    </label>
+                    <select
+                      value={editSource}
+                      onChange={(e) => setEditSource(e.target.value)}
+                      className="w-full bg-slate-950 border border-white/10 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none cursor-pointer"
+                    >
+                      {DISCOVERY_SOURCES.map(source => (
+                        <option key={source.id} value={source.id}>{source.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    Trading Tool Interests
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {AVAILABLE_TOOLS.map(tool => (
+                      <button
+                        key={tool.id}
+                        type="button"
+                        onClick={() => toggleEditPreference(tool.id)}
+                        className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
+                          editPreferences.includes(tool.id)
+                            ? 'bg-teal-500/15 border-teal-500/40 text-white'
+                            : 'bg-slate-950/60 border-white/5 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <span className="truncate">{tool.name}</span>
+                        {editPreferences.includes(tool.id) && <CheckCircle2 className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-3 flex justify-end gap-3 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditContactModalOpen(false)}
+                    className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editSaving || !editEmail.trim()}
+                    className="px-6 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-teal-500/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {editSaving ? 'Saving Changes...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
