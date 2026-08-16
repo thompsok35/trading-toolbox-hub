@@ -76,7 +76,7 @@ const AVAILABLE_TOOLS = [
   { id: 'opus-alerts', name: 'Opus Alerting Engine' },
   { id: 'opportunity-scanner', name: 'Opportunity Scanner & Stock Health' },
   { id: 'opus-ai-coach', name: 'Opus AI Options Coach' },
-  { id: 'market-insights', name: 'Market Insights' },
+  { id: 'itm-covered-call-bot', name: 'ITM Covered Call Strategy BOT' },
   { id: 'market-update', name: 'Daily Market Update' }
 ];
 

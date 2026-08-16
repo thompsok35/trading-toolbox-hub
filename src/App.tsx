@@ -1,7 +1,8 @@
 ﻿import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { 
-  TrendingUp, 
+  TrendingUp,
+  Cpu, 
   Wallet, 
   Bell, 
   Activity, 
@@ -174,10 +175,10 @@ const Home: React.FC = () => {
 
               <motion.div variants={itemVariants}>
                 <ToolCard 
-                  title="Market Insights"
-                  description="Derivative analysis generating implied expected moves via ATM Straddles."
-                  icon={TrendingUp}
-                  isComingSoon={true}
+                  title="ITM Covered Call Strategy BOT"
+                  description="Semi-automated strategy bot guiding traders through position risk analysis, capital management, and 100% risk-free paper trading for steady monthly stock income."
+                  icon={Cpu}
+                  url="https://opus.mytradingtoolbox.com"
                 />
               </motion.div>
             </motion.div>

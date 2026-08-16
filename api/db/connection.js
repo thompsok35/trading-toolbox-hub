@@ -17,6 +17,110 @@ export function generateToken() {
 
 export const DEFAULT_TEMPLATES = [
   {
+    id: 'itm_bot_announcement',
+    name: 'Feature Release: ITM Covered Call Strategy BOT (Paper Trading Included)',
+    category: 'Product Releases',
+    subject: 'New Feature Release: Semi-Automated ITM Covered Call Strategy BOT (Risk-Free Paper Trading)',
+    description: 'Announce the new semi-automated ITM Covered Call Strategy BOT with guided risk analysis, capital management, and risk-free paper trading.',
+    default_meet_url: config.defaultMeetUrl,
+    is_system: true,
+    body: `<div style="margin-bottom: 24px;">
+  <div style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px;">
+    🤖 NEW FEATURE RELEASE &bull; LIVE ON PLATFORM
+  </div>
+  <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3;">
+    Master Consistent Monthly Income with the <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">ITM Covered Call Strategy BOT</span>
+  </h2>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
+    Hi {{name}},
+  </p>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 20px 0;">
+    We are excited to announce our newest addition to the <strong>MyTradingToolbox</strong> ecosystem: the <strong>Semi-Automated ITM Covered Call Strategy BOT</strong>!
+  </p>
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 20px 0;">
+    Whether you are just getting started with options or looking to generate reliable monthly cash flow from a portfolio of stocks, In-The-Money (ITM) covered calls are one of the highest-probability, most disciplined income strategies available.
+  </p>
+</div>
+
+<div style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 22px; margin: 24px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+  <h3 style="color: #38bdf8; font-size: 15px; font-weight: 800; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+    Why Traders Love The New Strategy BOT:
+  </h3>
+
+  <div style="margin-bottom: 12px; background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 32px; vertical-align: top;">
+          <span style="font-size: 20px;">🛡️</span>
+        </td>
+        <td style="padding-left: 8px;">
+          <div style="color: #ffffff; font-weight: 700; font-size: 13px;">Guided Risk Analysis & Capital Management</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 3px; line-height: 1.5;">The BOT walks you through deep downside breakeven levels, intrinsic vs. extrinsic premium decay, and exact position sizing before you ever enter a trade.</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom: 12px; background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 32px; vertical-align: top;">
+          <span style="font-size: 20px;">📝</span>
+        </td>
+        <td style="padding-left: 8px;">
+          <div style="color: #34d399; font-weight: 700; font-size: 13px;">100% Risk-Free 'Paper' Trading Mode</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 3px; line-height: 1.5;">Practice and simulate live trades for as long as you need with zero risk. Build total confidence and mastery of assignment cycles, rolling mechanics, and profit targets.</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 32px; vertical-align: top;">
+          <span style="font-size: 20px;">⚡</span>
+        </td>
+        <td style="padding-left: 8px;">
+          <div style="color: #818cf8; font-weight: 700; font-size: 13px;">Semi-Automated Execution & Trade Plans</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 3px; line-height: 1.5;">Get clear strike recommendations and automated trade plans synchronized directly into CashMap Planner and our Real-Time Alerts engine.</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div style="background: linear-gradient(135deg, rgba(2,132,199,0.15) 0%, rgba(99,102,241,0.15) 100%); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 24px; text-align: center; margin: 28px 0;">
+  <h4 style="color: #ffffff; font-size: 16px; font-weight: 800; margin: 0 0 6px 0;">
+    Ready to Explore the ITM Covered Call BOT?
+  </h4>
+  <p style="color: #94a3b8; font-size: 13px; margin: 0 0 18px 0; line-height: 1.5;">
+    Log into the platform to start paper trading, or schedule a 15-minute 1-on-1 walkthrough with Keith:
+  </p>
+
+  <div style="margin-bottom: 12px;">
+    <a href="https://opus.mytradingtoolbox.com" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 10px; font-weight: 800; display: inline-block; font-size: 14px; margin-right: 8px; box-shadow: 0 4px 14px rgba(2,132,199,0.35);">
+      🚀 Launch Opus & Try the BOT &rarr;
+    </a>
+    <a href="{{meet_url}}" style="background-color: #1e293b; color: #ffffff; border: 1px solid #334155; padding: 12px 22px; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-block; font-size: 14px;">
+      📅 Book 15-Min Live Demo
+    </a>
+  </div>
+
+  <div style="margin-top: 14px; font-size: 12px; color: #38bdf8; font-weight: 600;">
+    💬 Have questions about how ITM covered calls work? Simply reply to this email!
+  </div>
+</div>
+
+<p style="margin: 0; color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+  Happy Trading,<br/>
+  <strong style="color: #ffffff; font-size: 15px;">Keith Thompson</strong><br/>
+  <span style="color: #64748b; font-size: 12px;">Founder & Developer &bull; MyTradingToolbox</span>
+</p>`
+  },
+  {
     id: 'welcome_introduction',
     name: 'Welcome & Introduction (Discovery & Strategy)',
     category: 'Onboarding & Discovery',
