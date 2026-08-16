@@ -84,7 +84,7 @@ export class EmailService {
     return { success: true };
   }
 
-    buildFullHtml({ content, unsubscribeUrl, recipientEmail }) {
+  buildFullHtml({ content, unsubscribeUrl, recipientEmail }) {
     return `
       <!DOCTYPE html>
       <html>
@@ -154,6 +154,66 @@ export class EmailService {
       </html>
     `;
   }
+
+  renderTemplate(templateHtml, variables) {
+    let rendered = templateHtml || '';
+    
+    // Clean name fallback
+    let name = variables.name;
+    if (!name || name.trim().length === 0) {
+      const email = variables.email || '';
+      const prefix = email.split('@')[0] || '';
+      if (!prefix || prefix.toLowerCase().includes('llc') || prefix.includes('_') || /\d{3,}/.test(prefix)) {
+        name = 'Trader';
+      } else {
+        name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+      }
+    }
+
+    rendered = rendered.replace(/\{\{name\}\}/g, name);
+    rendered = rendered.replace(/\{\{email\}\}/g, variables.email || '');
+    rendered = rendered.replace(/\{\{meet_url\}\}/g, variables.meetUrl || config.defaultMeetUrl);
+    rendered = rendered.replace(/\{\{unsubscribe_url\}\}/g, variables.unsubscribeUrl || '#');
+    return rendered;
+  }
+
+  async sendRawEmail({ to, fromAlias = config.welcomeSender, subject, htmlBody }) {
+    if (!config.resendApiKey) {
+      console.warn('[Email] RESEND_API_KEY is missing. Email simulated in mock mode.');
+      return { success: true, simulated: true, id: `mock-${Date.now()}` };
+    }
+
+    try {
+      const payload = {
+        from: `MyTradingToolbox <${fromAlias}>`,
+        to: Array.isArray(to) ? to : [to],
+        subject: subject,
+        html: htmlBody
+      };
+
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, id: data.id };
+      } else {
+        const errorText = await response.text();
+        console.error('[Email] Resend Error:', errorText);
+        return { success: false, error: errorText };
+      }
+    } catch (err) {
+      console.error('[Email] Dispatch Exception:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
   async sendDirectCrmEmail({ toEmail, name = '', templateId = 'welcome_introduction', customSubject = '', customBody = '', googleMeetUrl, unsubscribeToken = '', appBaseUrl = config.defaultAppUrl }) {
     const template = await this.getTemplateById(templateId);
     const subject = customSubject || template.subject;
