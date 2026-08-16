@@ -84,42 +84,63 @@ export class EmailService {
     return { success: true };
   }
 
-  buildFullHtml({ content, unsubscribeUrl, recipientEmail }) {
+    buildFullHtml({ content, unsubscribeUrl, recipientEmail }) {
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MyTradingToolbox</title>
       </head>
-      <body style="margin: 0; padding: 0; background-color: #02040c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #02040c; padding: 30px 10px;">
+      <body style="margin: 0; padding: 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc; -webkit-font-smoothing: antialiased;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #030712; padding: 30px 10px;">
           <tr>
             <td align="center">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #0f172a; border-radius: 16px; border: 1px solid #1e293b; overflow: hidden;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #0f172a; border-radius: 20px; border: 1px solid #1e293b; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+                
+                <!-- Glowing Top Brand Accent Bar -->
                 <tr>
-                  <td style="padding: 24px 28px; border-bottom: 1px solid #1e293b; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+                  <td height="4" style="background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #34d399 100%); line-height: 4px; font-size: 0;">&nbsp;</td>
+                </tr>
+
+                <!-- Header Banner -->
+                <tr>
+                  <td style="padding: 24px 30px; border-bottom: 1px solid #1e293b; background: linear-gradient(180deg, #131d31 0%, #0f172a 100%);">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                       <tr>
                         <td align="left">
-                          <span style="font-size: 20px; font-weight: 900; color: #38bdf8; letter-spacing: -0.5px;">MyTradingToolbox</span>
-                          <span style="display: block; font-size: 12px; color: #94a3b8; margin-top: 2px;">Professional Suite for Income & Options Traders</span>
+                          <div style="display: inline-block;">
+                            <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">
+                              <span style="color: #38bdf8;">⚡</span> MyTradingToolbox
+                            </span>
+                            <span style="display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); padding: 2px 8px; border-radius: 9999px; vertical-align: middle;">
+                              PRO SUITE
+                            </span>
+                          </div>
+                          <div style="font-size: 12px; color: #94a3b8; margin-top: 3px; font-weight: 500;">
+                            Income & Options Intelligence Platform
+                          </div>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
+
+                <!-- Email Body Content -->
                 <tr>
-                  <td style="padding: 32px 28px; font-size: 15px; line-height: 1.6; color: #e2e8f0;">
+                  <td style="padding: 32px 30px; font-size: 15px; line-height: 1.6; color: #e2e8f0;">
                     ${content}
                   </td>
                 </tr>
+
+                <!-- Footer with CAN-SPAM -->
                 <tr>
-                  <td style="padding: 24px 28px; background-color: #090d16; border-top: 1px solid #1e293b; text-align: center; font-size: 12px; color: #64748b;">
-                    <p style="margin: 0 0 8px 0;">This email was sent to <strong style="color: #94a3b8;">${recipientEmail || 'you'}</strong> because you requested early access or signed up on MyTradingToolbox.</p>
-                    <p style="margin: 0 0 12px 0;">MyTradingToolbox &bull; Income Trading Tools &bull; Financial Suite</p>
+                  <td style="padding: 24px 30px; background-color: #080d1a; border-top: 1px solid #1e293b; text-align: center; font-size: 12px; color: #64748b; line-height: 1.6;">
+                    <p style="margin: 0 0 6px 0;">This email was sent to <strong style="color: #94a3b8;">${recipientEmail || 'you'}</strong> because you requested early access on MyTradingToolbox.</p>
+                    <p style="margin: 0 0 10px 0;">MyTradingToolbox &bull; Active Options & Cash Flow Suite</p>
                     <p style="margin: 0;">
-                      <a href="${unsubscribeUrl}" style="color: #38bdf8; text-decoration: underline; font-weight: 500;">
+                      <a href="${unsubscribeUrl}" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">
                         Unsubscribe / Manage Email Preferences
                       </a>
                     </p>
@@ -133,54 +154,6 @@ export class EmailService {
       </html>
     `;
   }
-
-  renderTemplate(templateHtml, variables) {
-    let rendered = templateHtml;
-    const name = variables.name || (variables.email ? variables.email.split('@')[0] : 'Trader');
-    rendered = rendered.replace(/\{\{name\}\}/g, name);
-    rendered = rendered.replace(/\{\{email\}\}/g, variables.email || '');
-    rendered = rendered.replace(/\{\{meet_url\}\}/g, variables.meetUrl || config.defaultMeetUrl);
-    rendered = rendered.replace(/\{\{unsubscribe_url\}\}/g, variables.unsubscribeUrl || '#');
-    return rendered;
-  }
-
-  async sendRawEmail({ to, fromAlias = config.welcomeSender, subject, htmlBody }) {
-    if (!config.resendApiKey) {
-      console.warn('[Email] RESEND_API_KEY is missing. Email simulated in mock mode.');
-      return { success: true, simulated: true, id: `mock-${Date.now()}` };
-    }
-
-    try {
-      const payload = {
-        from: `MyTradingToolbox <${fromAlias}>`,
-        to: Array.isArray(to) ? to : [to],
-        subject: subject,
-        html: htmlBody
-      };
-
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, id: data.id };
-      } else {
-        const errorText = await response.text();
-        console.error('[Email] Resend Error:', errorText);
-        return { success: false, error: errorText };
-      }
-    } catch (err) {
-      console.error('[Email] Dispatch Exception:', err);
-      return { success: false, error: err.message };
-    }
-  }
-
   async sendDirectCrmEmail({ toEmail, name = '', templateId = 'welcome_introduction', customSubject = '', customBody = '', googleMeetUrl, unsubscribeToken = '', appBaseUrl = config.defaultAppUrl }) {
     const template = await this.getTemplateById(templateId);
     const subject = customSubject || template.subject;

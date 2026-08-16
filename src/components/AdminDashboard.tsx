@@ -517,26 +517,28 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const renderSimulatedHtml = (bodyHtml: string, meetUrl?: string) => {
+    const renderSimulatedHtml = (bodyHtml: string, meetUrl?: string) => {
     let rendered = (bodyHtml || '')
-      .replace(/\{\{name\}\}/g, 'Alex Trader')
+      .replace(/\{\{name\}\}/g, 'Alex')
       .replace(/\{\{email\}\}/g, 'trader@example.com')
       .replace(/\{\{meet_url\}\}/g, meetUrl || 'https://meet.google.com/demo-sample')
       .replace(/\{\{unsubscribe_url\}\}/g, '#');
 
     return `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #02040c; padding: 20px; color: #f8fafc;">
-        <div style="max-width: 580px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden;">
-          <div style="padding: 20px 24px; border-bottom: 1px solid #1e293b; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
-            <span style="font-size: 18px; font-weight: 900; color: #38bdf8;">MyTradingToolbox</span>
-            <span style="display: block; font-size: 11px; color: #94a3b8; margin-top: 2px;">Professional Suite for Income & Options Traders</span>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #030712; padding: 20px; color: #f8fafc;">
+        <div style="max-width: 580px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          <div style="height: 3px; background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #34d399 100%);"></div>
+          <div style="padding: 20px 24px; border-bottom: 1px solid #1e293b; background: linear-gradient(180deg, #131d31 0%, #0f172a 100%);">
+            <span style="font-size: 18px; font-weight: 900; color: #ffffff;"><span style="color: #38bdf8;">⚡</span> MyTradingToolbox</span>
+            <span style="margin-left: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 2px 6px; border-radius: 9999px;">PRO SUITE</span>
+            <span style="display: block; font-size: 11px; color: #94a3b8; margin-top: 2px;">Income & Options Intelligence Platform</span>
           </div>
           <div style="padding: 24px; font-size: 14px; line-height: 1.6; color: #e2e8f0;">
             ${rendered}
           </div>
-          <div style="padding: 18px 24px; background-color: #090d16; border-top: 1px solid #1e293b; text-align: center; font-size: 11px; color: #64748b;">
-            <p style="margin: 0 0 6px 0;">This email was sent to trader@example.com</p>
-            <p style="margin: 0;"><span style="color: #38bdf8; text-decoration: underline;">Unsubscribe / Manage Preferences</span></p>
+          <div style="padding: 16px 24px; background-color: #080d1a; border-top: 1px solid #1e293b; text-align: center; font-size: 11px; color: #64748b;">
+            <p style="margin: 0 0 4px 0;">This email was sent to trader@example.com</p>
+            <p style="margin: 0;"><span style="color: #38bdf8; text-decoration: underline; font-weight: 600;">Unsubscribe / Manage Preferences</span></p>
           </div>
         </div>
       </div>

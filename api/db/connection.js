@@ -24,29 +24,153 @@ export const DEFAULT_TEMPLATES = [
     description: 'Friendly intro asking how they found you, what strategies they trade, specific questions to answer by email, and offering an optional live Google Meet.',
     default_meet_url: config.defaultMeetUrl,
     is_system: true,
-    body: `<p>Hi {{name}},</p>
-<p>I'm Keith Thompson, the creator behind <strong>MyTradingToolbox</strong>. I wanted to personally reach out, say hello, and welcome you to our trading community!</p>
-<p>We engineered these tools specifically for active income and options traders who want clearer data, automated cash flow forecasting, and disciplined risk management.</p>
+    body: `
+<div style="margin-bottom: 24px;">
+  <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 20px;">
+    <tr>
+      <td style="width: 48px; height: 48px; background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%); border-radius: 12px; text-align: center; vertical-align: middle; color: #ffffff; font-weight: 900; font-size: 18px; box-shadow: 0 4px 14px rgba(2,132,199,0.4); border: 1px solid rgba(255,255,255,0.15);">
+        KT
+      </td>
+      <td style="padding-left: 14px; vertical-align: middle;">
+        <span style="font-size: 16px; font-weight: 800; color: #ffffff; display: block; letter-spacing: -0.2px;">Keith Thompson</span>
+        <span style="font-size: 12px; color: #38bdf8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Founder &bull; MyTradingToolbox</span>
+      </td>
+    </tr>
+  </table>
 
-<div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
-  <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 15px;">I'd love to learn a little about you and your level of interest in options trading:</h3>
-  <ol style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
-    <li><strong>How did you find MyTradingToolbox?</strong> (A friend/referral, trader community, social media, or search?)</li>
-    <li><strong>What strategies are you currently running?</strong> (Covered calls, cash-secured puts, spreads, dividend growth, etc.)</li>
-    <li><strong>Do you have any specific questions about our tools</strong> that I can answer for you with a quick reply?</li>
-  </ol>
+  <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3; letter-spacing: -0.4px;">
+    Welcome to <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">MyTradingToolbox</span>!
+  </h2>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
+    Hi {{name}},
+  </p>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 20px 0;">
+    I wanted to personally welcome you to our trading community. We engineered these tools specifically for active income & options traders who want clearer trade setups, real-time risk telemetry, and automated cash flow forecasting.
+  </p>
 </div>
 
-<p>You can simply <strong>hit Reply to this email</strong> and let me know—I read and respond to every email personally.</p>
+<!-- 3 Elevated Question Cards -->
+<div style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 22px; margin: 24px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+  <div style="margin-bottom: 16px;">
+    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 10px; rounded-radius: 6px; border-radius: 6px; display: inline-block;">
+      Quick 30-Second Discovery
+    </span>
+    <h3 style="color: #f8fafc; font-size: 16px; font-weight: 700; margin: 10px 0 4px 0;">
+      I'd love to learn a little about you and your level of interest in options trading:
+    </h3>
+  </div>
 
-<div style="background-color: #0f172a; padding: 18px 20px; border-radius: 12px; border: 1px dashed #334155; margin: 24px 0; text-align: center;">
-  <p style="color: #94a3b8; font-size: 13px; margin: 0 0 12px 0;">Prefer to chat live? I'd be happy to hop on a quick 10-15 minute Google Meet video call:</p>
-  <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 14px; box-shadow: 0 4px 12px rgba(2,132,199,0.3);">
-    Book / Join Quick Google Meet &rarr;
-  </a>
+  <!-- Question 1 -->
+  <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 28px; vertical-align: top;">
+          <span style="background: linear-gradient(135deg, #0284c7, #38bdf8); color: #ffffff; font-size: 11px; font-weight: 900; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 6px; display: inline-block;">1</span>
+        </td>
+        <td style="padding-left: 10px; vertical-align: middle;">
+          <div style="color: #ffffff; font-weight: 700; font-size: 13px;">How did you find MyTradingToolbox?</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Friend / Referral &bull; Twitter/X &bull; Discord &bull; YouTube &bull; Search</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Question 2 -->
+  <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 28px; vertical-align: top;">
+          <span style="background: linear-gradient(135deg, #6366f1, #818cf8); color: #ffffff; font-size: 11px; font-weight: 900; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 6px; display: inline-block;">2</span>
+        </td>
+        <td style="padding-left: 10px; vertical-align: middle;">
+          <div style="color: #ffffff; font-weight: 700; font-size: 13px;">What strategies are you currently running?</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Covered Calls &bull; Cash-Secured Puts &bull; Spreads &bull; Dividend Income</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Question 3 -->
+  <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 16px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="width: 28px; vertical-align: top;">
+          <span style="background: linear-gradient(135deg, #10b981, #34d399); color: #ffffff; font-size: 11px; font-weight: 900; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 6px; display: inline-block;">3</span>
+        </td>
+        <td style="padding-left: 10px; vertical-align: middle;">
+          <div style="color: #ffffff; font-weight: 700; font-size: 13px;">Do you have any specific questions about our tools?</div>
+          <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Ask about live scanner setups, Tradier connection, or expected move alerts.</div>
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
 
-<p style="margin-bottom: 0;">Excited to have you with us,<br/><strong>Keith Thompson</strong><br/><span style="color: #64748b; font-size: 13px;">Founder, MyTradingToolbox</span></p>`
+<!-- What's Inside Feature Grid -->
+<div style="margin: 28px 0;">
+  <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">
+    What You Can Explore In The Suite:
+  </div>
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td width="50%" style="padding-right: 6px; padding-bottom: 10px;" valign="top">
+        <div style="background-color: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 12px;">
+          <div style="color: #38bdf8; font-weight: 700; font-size: 12px; margin-bottom: 2px;">⚡ Opus Options Engine</div>
+          <div style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Covered call & put scanner with real-time Tradier execution.</div>
+        </div>
+      </td>
+      <td width="50%" style="padding-left: 6px; padding-bottom: 10px;" valign="top">
+        <div style="background-color: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 12px;">
+          <div style="color: #34d399; font-weight: 700; font-size: 12px; margin-bottom: 2px;">📊 CashMap Planner</div>
+          <div style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Project option premium cash flow & dividend calendars.</div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" style="padding-right: 6px;" valign="top">
+        <div style="background-color: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 12px;">
+          <div style="color: #f43f5e; font-weight: 700; font-size: 12px; margin-bottom: 2px;">🚨 Real-Time Alerts</div>
+          <div style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Instant SMS/email strike breaches & volatility warnings.</div>
+        </div>
+      </td>
+      <td width="50%" style="padding-left: 6px;" valign="top">
+        <div style="background-color: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 12px;">
+          <div style="color: #a78bfa; font-weight: 700; font-size: 12px; margin-bottom: 2px;">🤖 AI Options Coach</div>
+          <div style="color: #94a3b8; font-size: 11px; line-height: 1.4;">Tailored position sizing & risk mitigation strategies.</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- Dual Call-to-Action Section -->
+<div style="background: linear-gradient(135deg, rgba(2,132,199,0.15) 0%, rgba(99,102,241,0.15) 100%); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 24px; text-align: center; margin: 28px 0;">
+  <h4 style="color: #ffffff; font-size: 16px; font-weight: 800; margin: 0 0 6px 0;">
+    Let's Connect & Walk Through The Tools
+  </h4>
+  <p style="color: #94a3b8; font-size: 13px; margin: 0 0 18px 0; line-height: 1.5;">
+    You can simply <strong>hit Reply</strong> to this email with your answers, or book a quick 10-15 minute live Google Meet walkthrough with me:
+  </p>
+
+  <div>
+    <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: 800; display: inline-block; font-size: 14px; box-shadow: 0 6px 20px rgba(2,132,199,0.4); border: 1px solid rgba(255,255,255,0.2);">
+      📅 Schedule 15-Min Live Demo (Google Meet) &rarr;
+    </a>
+  </div>
+
+  <div style="margin-top: 14px; font-size: 12px; color: #38bdf8; font-weight: 600;">
+    💬 Or reply directly to this email — I read every response personally!
+  </div>
+</div>
+
+<p style="margin: 0; color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+  Excited to have you with us,<br/>
+  <strong style="color: #ffffff; font-size: 15px;">Keith Thompson</strong><br/>
+  <span style="color: #64748b; font-size: 12px;">Founder & Developer &bull; MyTradingToolbox</span>
+</p>
+`
   },
   {
     id: 'google_meet_demo',
@@ -56,28 +180,74 @@ export const DEFAULT_TEMPLATES = [
     description: 'Invite high-intent traders to an exclusive 1-on-1 Google Meet video call walkthrough of Opus, CashMap, and Alerting Engine.',
     default_meet_url: config.defaultMeetUrl,
     is_system: true,
-    body: `<p>Hi {{name}},</p>
-<p>Thanks for your interest in <strong>MyTradingToolbox</strong>! We are currently onboarding a select group of options and income traders to showcase our end-to-end execution and analytics suite.</p>
-
-<div style="background-color: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 24px 0;">
-  <h3 style="color: #38bdf8; margin-top: 0; margin-bottom: 12px; font-size: 16px;">What We Will Cover in Your 15-Minute Google Meet Demo:</h3>
-  <ul style="color: #cbd5e1; line-height: 1.7; padding-left: 20px; font-size: 14px; margin-bottom: 0;">
-    <li><strong>Opus Options Engine:</strong> Live analysis for covered calls, cash-secured puts, and multi-leg spreads with real-time Tradier connectivity.</li>
-    <li><strong>CashMap Planner:</strong> Automated cash flow forecasting combining option premium & dividend schedules.</li>
-    <li><strong>Real-Time Alert Engine:</strong> Strike breaches and implied expected move telemetry via SMS/email.</li>
-    <li><strong>AI Options Coach:</strong> Tailored position sizing and strategy adjustments.</li>
-  </ul>
+    body: `
+<div style="margin-bottom: 24px;">
+  <div style="display: inline-block; background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px;">
+    📹 VIP 1-on-1 Walkthrough
+  </div>
+  <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px 0; line-height: 1.3;">
+    Personal Demo of <span style="background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; color: #38bdf8;">MyTradingToolbox Suite</span>
+  </h2>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
+    Hi {{name}},
+  </p>
+  
+  <p style="font-size: 15px; line-height: 1.6; color: #cbd5e1; margin: 0 0 20px 0;">
+    Thanks for your interest in <strong>MyTradingToolbox</strong>! We are currently onboarding a select group of options and income traders to showcase our live execution and cash flow analytics platform.
+  </p>
 </div>
 
-<p>Would you have 15 minutes this week for a live walkthrough and to get direct access?</p>
+<!-- Covered in Demo Grid -->
+<div style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 22px; margin: 24px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+  <h3 style="color: #38bdf8; font-size: 15px; font-weight: 800; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+    What We Will Walk Through on Google Meet (15 Mins):
+  </h3>
 
-<div style="text-align: center; margin: 30px 0;">
-  <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; font-size: 15px; box-shadow: 0 4px 14px rgba(2,132,199,0.3);">
-    Join / Schedule Google Meet Demo &rarr;
-  </a>
+  <div style="display: grid; gap: 10px;">
+    <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;">
+      <div style="color: #ffffff; font-weight: 700; font-size: 13px;">⚡ Opus Options Engine</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Live screening for covered calls, cash-secured puts, and spreads with real-time Tradier 1-click execution.</div>
+    </div>
+    
+    <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;">
+      <div style="color: #34d399; font-weight: 700; font-size: 13px;">📊 CashMap Income Forecaster</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Synchronized cash flow planning combining option premium cash with dividend payout schedules.</div>
+    </div>
+
+    <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 12px 16px; margin-bottom: 8px;">
+      <div style="color: #f43f5e; font-weight: 700; font-size: 13px;">🚨 Risk & Strike Breach Alerts</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Instant SMS/email notifications when underlying price approaches short strikes or volatility shifts.</div>
+    </div>
+
+    <div style="background-color: #0b1120; border: 1px solid #1e293b; border-radius: 12px; padding: 12px 16px;">
+      <div style="color: #a78bfa; font-weight: 700; font-size: 13px;">🤖 AI Options Strategy Coach</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 2px;">Real-time position sizing, hedge recommendations, and defense adjustments for active traders.</div>
+    </div>
+  </div>
 </div>
 
-<p style="color: #94a3b8; font-size: 14px;">If you prefer another time, feel free to reply directly to this email with what days work best for you.</p>`
+<!-- CTA Box -->
+<div style="background: linear-gradient(135deg, rgba(2,132,199,0.15) 0%, rgba(99,102,241,0.15) 100%); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 24px; text-align: center; margin: 28px 0;">
+  <p style="color: #ffffff; font-size: 15px; font-weight: 700; margin: 0 0 16px 0;">
+    Would you have 15 minutes this week for a live walkthrough and to get direct access?
+  </p>
+  <div>
+    <a href="{{meet_url}}" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 10px; font-weight: 800; display: inline-block; font-size: 14px; box-shadow: 0 6px 20px rgba(2,132,199,0.4); border: 1px solid rgba(255,255,255,0.2);">
+      📅 Schedule / Join Google Meet Demo &rarr;
+    </a>
+  </div>
+  <div style="margin-top: 14px; font-size: 12px; color: #94a3b8;">
+    Prefer another time? Simply reply directly to this email with what days work best for you!
+  </div>
+</div>
+
+<p style="margin: 0; color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+  Best regards,<br/>
+  <strong style="color: #ffffff; font-size: 15px;">Keith Thompson</strong><br/>
+  <span style="color: #64748b; font-size: 12px;">Founder &bull; MyTradingToolbox</span>
+</p>
+`
   },
   {
     id: 'feature_announcement',
