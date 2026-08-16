@@ -42,6 +42,13 @@ export class ContactsController {
     res.json({ success: true, contact });
   }
 
+  async deleteContact(req, res) {
+    const { id } = req.params;
+    const deleted = await contactRepository.deleteContact(id);
+    if (!deleted) return res.status(404).json({ success: false, error: 'Contact not found' });
+    res.json({ success: true, message: 'Contact deleted successfully' });
+  }
+
   async markContacted(req, res) {
     const { email } = req.body;
     await contactRepository.recordPromotionalContact(email);

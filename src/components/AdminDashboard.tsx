@@ -346,6 +346,21 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+    const handleDeleteContact = async (contactId: number, email: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete ${email}?`)) return;
+    try {
+      const res = await fetch(`/api/v1/contacts/${contactId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-password': password }
+      });
+      if (res.ok) {
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
+  };
+
   const handleStatusChange = async (contactId: number, newStatus: string) => {
     try {
       const res = await fetch(`/api/v1/contacts/${contactId}`, {
@@ -1216,6 +1231,13 @@ const AdminDashboard: React.FC = () => {
                                   >
                                     <Video className="w-3.5 h-3.5" />
                                     <span>Demo Invite</span>
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteContact(lead.id, lead.email)}
+                                    title="Delete Contact"
+                                    className="inline-flex items-center justify-center p-1.5 rounded-xl bg-slate-950 hover:bg-red-500/20 text-slate-500 hover:text-red-400 border border-white/5 hover:border-red-500/30 transition-all cursor-pointer active:scale-95"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               )}

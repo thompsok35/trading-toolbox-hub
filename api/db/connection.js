@@ -445,44 +445,7 @@ export let mockEntitlements = [];
 export let mockSubscriptions = [];
 export let mockTickets = [];
 
-export let mockLeads = [
-  { 
-    id: 1, 
-    email: 'demo@mytradingtoolbox.com', 
-    name: 'Alex Trader',
-    status: 'demo_scheduled',
-    source: 'referral',
-    preferences: ['opus-analysis', 'opus-alerts', 'market-insights'], 
-    notes: [
-      { id: '1', date: new Date(Date.now() - 43200000).toISOString(), text: 'Scheduled Google Meet walkthrough for Opus Options Engine.' }
-    ],
-    visit_count: 5, 
-    last_accessed: new Date(), 
-    created_at: new Date(Date.now() - 86400000),
-    last_promotional_contact: new Date(Date.now() - 43200000),
-    unsubscribe_token: 'demo-token-12345',
-    is_unsubscribed: false,
-    unsubscribed_at: null
-  },
-  { 
-    id: 2, 
-    email: 'tester@example.com', 
-    name: 'Sarah Jenkins',
-    status: 'contacted',
-    source: 'waitlist',
-    preferences: ['cashmap'], 
-    notes: [
-      { id: '2', date: new Date(Date.now() - 86400000).toISOString(), text: 'Interested in dividend & option premium cash flow tracking.' }
-    ],
-    visit_count: 2, 
-    last_accessed: new Date(Date.now() - 3600000), 
-    created_at: new Date(Date.now() - 172800000),
-    last_promotional_contact: new Date(),
-    unsubscribe_token: 'tester-token-67890',
-    is_unsubscribed: false,
-    unsubscribed_at: null
-  }
-];
+export let mockLeads = [];
 
 export async function initDb() {
   if (config.useMockDb) {
@@ -814,6 +777,16 @@ function handleMockQuery(text, params) {
   }
 
   // GENERIC UPDATE
+  if (normalized.includes('delete from leads')) {
+    const id = parseInt(params[0], 10);
+    const idx = mockLeads.findIndex(l => l.id === id);
+    if (idx !== -1) {
+      const removed = mockLeads.splice(idx, 1);
+      return { rows: removed };
+    }
+    return { rows: [] };
+  }
+
   if (normalized.includes('update leads')) {
     const email = params[0];
     const lead = mockLeads.find(l => l.email === email);

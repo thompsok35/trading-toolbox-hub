@@ -104,6 +104,11 @@ export class ContactRepository {
     return result.rows[0];
   }
 
+  async deleteContact(id) {
+    const res = await query('DELETE FROM leads WHERE id = $1 RETURNING *', [id]);
+    return res.rows[0] || null;
+  }
+
   async recordPromotionalContact(email) {
     const result = await query(`
       UPDATE leads 
