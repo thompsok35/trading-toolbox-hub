@@ -439,6 +439,12 @@ export const DEFAULT_TEMPLATES = [
 
 export let mockTemplates = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
 
+
+export let mockUsers = [];
+export let mockEntitlements = [];
+export let mockSubscriptions = [];
+export let mockTickets = [];
+
 export let mockLeads = [
   { 
     id: 1, 
@@ -820,6 +826,157 @@ function handleMockQuery(text, params) {
     }
     return { rows: [lead || {}] };
   }
+
+  
+  // USERS & ENTITLEMENTS MOCK QUERIES
+  if (normalized.includes('select * from users where lower(email)')) {
+    const email = (params[0] || '').toLowerCase().trim();
+    const user = mockUsers.find(u => u.email.toLowerCase() === email);
+    return { rows: user ? [user] : [] };
+  }
+
+  if (normalized.includes('select * from users where id =')) {
+    const id = params[0];
+    const user = mockUsers.find(u => u.id === id);
+    return { rows: user ? [user] : [] };
+  }
+
+  if (normalized.includes('select id, email, name, phone, status, is_email_verified, created_at, last_login_at from users where id =')) {
+    const id = params[0];
+    const user = mockUsers.find(u => u.id === id);
+    return { rows: user ? [user] : [] };
+  }
+
+  if (normalized.includes('insert into users')) {
+    const email = (params[0] || '').toLowerCase().trim();
+    let name = params[1] || 'Trader';
+    if (params.length >= 3 && typeof params[2] === 'string' && params[2] !== '') {
+      name = params[2];
+    }
+    const user = {
+      id: 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      email,
+      name,
+      status: 'active',
+      is_email_verified: true,
+      created_at: new Date(),
+      last_login_at: new Date()
+    };
+    mockUsers.push(user);
+    return { rows: [user] };
+  }
+
+  if (normalized.includes('insert into app_entitlements')) {
+    const userId = params[0];
+    let ent = mockEntitlements.find(e => e.user_id === userId);
+    if (!ent) {
+      ent = {
+        user_id: userId,
+        opus_access: true,
+        opus_tradier_connected: false,
+        ai_coach_access: false,
+        ai_coach_status: 'pending_approval',
+        ai_coach_approved_at: null,
+        alerts_access: true,
+        alerts_sms_limit: 10,
+        cashmap_access: true,
+        dataservices_access: true,
+        itm_bot_access: true,
+        itm_bot_mode: 'paper_only',
+        updated_at: new Date()
+      };
+      mockEntitlements.push(ent);
+    }
+    return { rows: [ent] };
+  }
+
+  if (normalized.includes('select * from app_entitlements where user_id =')) {
+    const userId = params[0];
+    const ent = mockEntitlements.find(e => e.user_id === userId);
+    return { rows: ent ? [ent] : [] };
+  }
+
+  if (normalized.includes('update app_entitlements')) {
+    const userId = params[0];
+    let ent = mockEntitlements.find(e => e.user_id === userId);
+    if (ent) {
+      if (normalized.includes('ai_coach_status =')) {
+        ent.ai_coach_status = params[1] !== undefined ? params[1] : ent.ai_coach_status;
+      }
+      if (normalized.includes('ai_coach_access =')) {
+        ent.ai_coach_access = params[1] !== undefined ? params[1] : ent.ai_coach_access;
+      }
+      ent.updated_at = new Date();
+    }
+    return { rows: [ent || {}] };
+  }
+
+  if (normalized.includes('insert into subscriptions')) {
+    const userId = params[0];
+    let sub = mockSubscriptions.find(s => s.user_id === userId);
+    if (!sub) {
+      sub = {
+        id: 'sub_' + Date.now(),
+        user_id: userId,
+        plan_tier: params[1] || 'free_tier',
+        status: params[2] || 'active',
+        created_at: new Date()
+      };
+      mockSubscriptions.push(sub);
+    }
+    return { rows: [sub] };
+  }
+
+  if (normalized.includes('select * from subscriptions where user_id =')) {
+    const userId = params[0];
+    const sub = mockSubscriptions.find(s => s.user_id === userId);
+    return { rows: sub ? [sub] : [] };
+  }
+
+  if (normalized.includes('select') && normalized.includes('from users u') && normalized.includes('left join app_entitlements')) {
+    const combined = mockUsers.map(u => {
+      const ent = mockEntitlements.find(e => e.user_id === u.id) || {};
+      const sub = mockSubscriptions.find(s => s.user_id === u.id) || {};
+      return {
+        ...u,
+        ...ent,
+        plan_tier: sub.plan_tier || 'free_tier',
+        subscription_status: sub.status || 'active'
+      };
+    });
+    return { rows: combined };
+  }
+
+  if (normalized.includes('insert into support_tickets')) {
+    const ticket = {
+      id: 'tkt_' + Date.now(),
+      user_id: params[0] || null,
+      email: params[1],
+      app_context: params[2] || 'general',
+      subject: params[3],
+      message: params[4],
+      status: 'open',
+      admin_notes: '',
+      created_at: new Date()
+    };
+    mockTickets.push(ticket);
+    return { rows: [ticket] };
+  }
+
+  if (normalized.includes('select * from support_tickets')) {
+    return { rows: [...mockTickets].sort((a, b) => b.created_at - a.created_at) };
+  }
+
+  if (normalized.includes('update support_tickets')) {
+    const id = params[0];
+    const ticket = mockTickets.find(t => t.id === id);
+    if (ticket) {
+      ticket.status = params[1] || ticket.status;
+      ticket.admin_notes = params[2] || ticket.admin_notes;
+    }
+    return { rows: [ticket || {}] };
+  }
+
 
   return { rows: [] };
 }

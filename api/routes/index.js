@@ -1,3 +1,4 @@
+import entitlementsRouter from './entitlements.routes.js';
 import { Router } from 'express';
 import publicRoutes from './public.routes.js';
 import contactsRoutes from './contacts.routes.js';
@@ -11,14 +12,15 @@ router.use('/v1/public', publicRoutes);
 router.use('/v1/contacts', contactsRoutes);
 router.use('/v1/campaigns', campaignsRoutes);
 router.use('/v1/analytics', analyticsRoutes);
+router.use('/v1/entitlements', entitlementsRouter);
 
-// Backwards compatibility aliases for existing frontend and clients
+// Backwards compatibility aliases
 router.use('/', publicRoutes);
 router.use('/admin/contacts', contactsRoutes);
-router.use('/admin/leads', contactsRoutes); // legacy
-router.use('/admin/mark-contacted', contactsRoutes); // legacy
+router.use('/admin/leads', contactsRoutes);
 router.use('/admin/templates', campaignsRoutes);
 router.use('/admin/email', campaignsRoutes);
 router.use('/admin', analyticsRoutes);
+router.use('/entitlements', entitlementsRouter);
 
 export default router;

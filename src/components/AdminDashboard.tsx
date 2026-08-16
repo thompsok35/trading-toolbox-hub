@@ -105,7 +105,11 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; b
 const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState(sessionStorage.getItem('admin_pass') || '');
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'campaigns' | 'templates'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'customers' | 'tickets' | 'campaigns' | 'templates'>('pipeline');
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [isApprovingCoach, setIsApprovingCoach] = useState<string | null>(null);
   
   // CRM Data State
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -180,11 +184,13 @@ const AdminDashboard: React.FC = () => {
     setError('');
     try {
       
-      const [leadsRes, statsRes, templatesRes, configRes] = await Promise.all([
+            const [leadsRes, statsRes, templatesRes, configRes, usersRes, ticketsRes] = await Promise.all([
         fetch('/api/v1/contacts', { headers: { 'x-admin-password': pw } }),
         fetch('/api/v1/analytics/stats', { headers: { 'x-admin-password': pw } }),
         fetch('/api/v1/campaigns/templates', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/v1/campaigns/config', { headers: { 'x-admin-password': pw } })
+        fetch('/api/v1/campaigns/config', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/v1/entitlements/users', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/v1/entitlements/support/tickets', { headers: { 'x-admin-password': pw } })
       ]);
 
       if (leadsRes.status === 401) {
@@ -198,9 +204,17 @@ const AdminDashboard: React.FC = () => {
       }
 
       
-      const leadsData = await leadsRes.json();
+            const leadsData = await leadsRes.json();
       const statsData = await statsRes.json();
       const templatesData = templatesRes.ok ? await templatesRes.json() : [];
+      if (usersRes && usersRes.ok) {
+        const uData = await usersRes.json();
+        setCustomers(Array.isArray(uData) ? uData : []);
+      }
+      if (ticketsRes && ticketsRes.ok) {
+        const tData = await ticketsRes.json();
+        setTickets(Array.isArray(tData) ? tData : []);
+      }
       if (configRes && configRes.ok) {
         const cfg = await configRes.json();
         if (cfg.defaultMeetUrl && cfg.defaultMeetUrl !== 'https://meet.google.com/new') {
@@ -274,6 +288,64 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Status Change Handler
+  const handleApproveCoach = async (userId: string, currentApproved: boolean) => {
+    setIsApprovingCoach(userId);
+    try {
+      const res = await fetch(`/api/v1/entitlements/users/${userId}/approve-coach`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({ approved: !currentApproved })
+      });
+      if (res.ok) {
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsApprovingCoach(null);
+    }
+  };
+
+  const handleUpdateTier = async (userId: string, newTier: string) => {
+    try {
+      const res = await fetch(`/api/v1/entitlements/users/${userId}/subscription`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({ planTier: newTier, status: 'active' })
+      });
+      if (res.ok) {
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleResolveTicket = async (ticketId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
+    try {
+      const res = await fetch(`/api/v1/entitlements/support/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleStatusChange = async (contactId: number, newStatus: string) => {
     try {
       const res = await fetch(`/api/v1/contacts/${contactId}`, {
@@ -764,6 +836,27 @@ const AdminDashboard: React.FC = () => {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-white/10 gap-6">
+                    <button
+            onClick={() => setActiveTab('customers')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === 'customers'
+                ? 'bg-teal-500 text-black shadow-lg shadow-teal-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" /> Customers ({customers.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('tickets')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === 'tickets'
+                ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <HelpCircle className="w-3.5 h-3.5" /> Tickets ({tickets.filter(t => t.status === 'open').length})
+          </button>
           <button
             onClick={() => setActiveTab('pipeline')}
             className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
@@ -795,6 +888,180 @@ const AdminDashboard: React.FC = () => {
             <Sparkles className="w-4 h-4" /> Email Templates ({templates.length})
           </button>
         </div>
+
+                {/* TAB: REGISTERED CUSTOMERS & 6-APP ENTITLEMENTS */}
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-5 rounded-2xl border border-white/5">
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-teal-400" /> Unified Customer Base & 6-App Entitlements
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Manage access across Opus, AI Coach (Proprietary RAG Gate), Alerts, CashMap, DataServices, and ITM BOT.
+                </p>
+              </div>
+
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+                className="bg-slate-950 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 w-full sm:w-64"
+              />
+            </div>
+
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 bg-slate-950/60 text-[11px] uppercase font-bold text-slate-400 tracking-wider">
+                    <th className="p-4">Customer</th>
+                    <th className="p-4">Subscription Tier</th>
+                    <th className="p-4">Opus / Tradier</th>
+                    <th className="p-4">AI Coach (RAG Gate)</th>
+                    <th className="p-4">ITM BOT / Alerts</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-xs">
+                  {customers
+                    .filter(c => !customerSearch || c.email?.toLowerCase().includes(customerSearch.toLowerCase()) || c.name?.toLowerCase().includes(customerSearch.toLowerCase()))
+                    .map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-900/40 transition-colors">
+                        <td className="p-4">
+                          <div className="font-bold text-white">{c.name || 'Trader'}</div>
+                          <div className="text-slate-400 font-mono text-[11px]">{c.email}</div>
+                        </td>
+                        <td className="p-4">
+                          <select
+                            value={c.plan_tier || 'free_tier'}
+                            onChange={(e) => handleUpdateTier(c.id, e.target.value)}
+                            className="bg-slate-950 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-semibold cursor-pointer"
+                          >
+                            <option value="free_tier">🌱 Free Tier</option>
+                            <option value="pro_suite">⚡ Pro Suite ($49/mo)</option>
+                            <option value="vip_elite">👑 VIP Elite ($99/mo)</option>
+                          </select>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">Opus: ON</span>
+                            {c.opus_tradier_connected ? (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">Tradier 🟢</span>
+                            ) : (
+                              <span className="text-[10px] text-slate-500">No Broker</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            {c.ai_coach_status === 'approved' ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                                Approved ✅
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                Pending Review ⏳
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
+                              BOT: {c.itm_bot_mode === 'live_enabled' ? 'Live' : 'Paper'}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">
+                              SMS: {c.alerts_sms_limit || 10}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-right">
+                          <button
+                            disabled={isApprovingCoach === c.id}
+                            onClick={() => handleApproveCoach(c.id, c.ai_coach_status === 'approved')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              c.ai_coach_status === 'approved'
+                                ? 'bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-white/10'
+                                : 'bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                            }`}
+                          >
+                            {isApprovingCoach === c.id 
+                              ? 'Saving...' 
+                              : c.ai_coach_status === 'approved' 
+                              ? 'Revoke Coach Access' 
+                              : '1-Click Approve AI Coach ✅'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  {customers.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-500 text-xs">
+                        No registered users found yet. Users will appear here automatically when they log in to any suite app or register on the portal!
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: SUPPORT TICKETS INBOX */}
+        {activeTab === 'tickets' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/5">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-indigo-400" /> Customer Support & Helpdesk Desk
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">Review questions and feature requests submitted from the Hub portal.</p>
+            </div>
+
+            <div className="space-y-3">
+              {tickets.map(ticket => (
+                <div key={ticket.id} className="bg-slate-900/40 border border-white/5 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="space-y-1 max-w-2xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                        {ticket.app_context || 'General'}
+                      </span>
+                      <h3 className="font-bold text-white text-sm">{ticket.subject}</h3>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        ticket.status === 'resolved' ? 'bg-teal-500/20 text-teal-300' : 'bg-amber-500/20 text-amber-300'
+                      }`}>
+                        {ticket.status === 'resolved' ? 'Resolved ✅' : 'Open ⏳'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed pt-1">{ticket.message}</p>
+                    <div className="text-[11px] text-slate-500 font-mono">From: {ticket.email} &bull; {new Date(ticket.created_at).toLocaleString()}</div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={`mailto:${ticket.email}?subject=Re: ${encodeURIComponent(ticket.subject)}`}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all"
+                    >
+                      Reply by Email
+                    </a>
+                    <button
+                      onClick={() => handleResolveTicket(ticket.id, ticket.status)}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-white/10 cursor-pointer"
+                    >
+                      {ticket.status === 'resolved' ? 'Reopen' : 'Mark Resolved'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {tickets.length === 0 && (
+                <div className="bg-slate-900/20 border border-white/5 p-8 rounded-2xl text-center text-slate-500 text-xs">
+                  No support tickets currently open.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: CONTACTS & PIPELINE */}
         {activeTab === 'pipeline' && (

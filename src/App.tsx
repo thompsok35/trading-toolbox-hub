@@ -14,6 +14,7 @@ import {
 import { motion } from 'framer-motion';
 import ToolCard from './components/ToolCard';
 import ItmBotLanding from './components/ItmBotLanding';
+import CustomerPortal from './components/CustomerPortal';
 import LeadCapture from './components/LeadCapture';
 import PartnerCard from './components/PartnerCard';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -230,6 +231,12 @@ const Home: React.FC = () => {
             Privacy Policy
           </Link>
           <Link 
+            to="/portal" 
+            className="text-slate-500 hover:text-teal-400 text-xs font-semibold uppercase tracking-widest transition-all duration-300"
+          >
+            Customer Portal
+          </Link>
+          <Link 
             to="/admin" 
             className="text-slate-500 hover:text-blue-400 text-xs font-semibold uppercase tracking-widest transition-all duration-300"
           >
@@ -266,6 +273,7 @@ function App() {
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/itm-covered-call-bot" element={<ItmBotLanding />} />
         <Route path="/bot" element={<ItmBotLanding />} />
+        <Route path="/portal" element={<CustomerPortal />} />
         <Route path="/admin/*" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
