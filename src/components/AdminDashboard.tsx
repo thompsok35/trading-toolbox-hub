@@ -106,6 +106,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; b
 const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState(sessionStorage.getItem('admin_pass') || '');
   const [isAuthorized, setIsAuthorized] = useState(false);
+    const [dbStatus, setDbStatus] = useState<string>('Checking DB...');
   const [activeTab, setActiveTab] = useState<'pipeline' | 'customers' | 'tickets' | 'campaigns' | 'templates'>('pipeline');
   const [customers, setCustomers] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
@@ -194,7 +195,14 @@ const AdminDashboard: React.FC = () => {
     setError('');
     try {
       
-            const [leadsRes, statsRes, templatesRes, configRes, usersRes, ticketsRes] = await Promise.all([
+                  try {
+        const healthRes = await fetch('/api/v1/public/health');
+        if (healthRes.ok) {
+          const h = await healthRes.json();
+          setDbStatus(h.database);
+        }
+      } catch (e) {}
+      const [leadsRes, statsRes, templatesRes, configRes, usersRes, ticketsRes] = await Promise.all([
         fetch('/api/v1/contacts', { headers: { 'x-admin-password': pw } }),
         fetch('/api/v1/analytics/stats', { headers: { 'x-admin-password': pw } }),
         fetch('/api/v1/campaigns/templates', { headers: { 'x-admin-password': pw } }),
@@ -834,6 +842,10 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <span className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-900/80 border border-white/10 text-slate-300">
+              <span className={`w-2 h-2 rounded-full ${dbStatus.includes('PostgreSQL') ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span>{dbStatus}</span>
+            </span>
             <button 
               onClick={() => setIsAddModalOpen(true)}
               className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-2 active:scale-95 cursor-pointer"

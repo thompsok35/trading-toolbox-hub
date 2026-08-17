@@ -4,12 +4,24 @@ import { config } from '../config/env.js';
 
 const { Pool } = pg;
 
-export const pool = new Pool({
-  connectionString: config.databaseUrl,
-  ssl: config.databaseUrl?.includes('localhost') ? false : { 
-    rejectUnauthorized: false 
-  }
-});
+function getPoolConfig() {
+  const url = config.databaseUrl || '';
+  if (!url) return null;
+
+  // Railway internal private network or localhost do NOT use SSL
+  const isInternal = url.includes('.railway.internal') || 
+                     url.includes('localhost') || 
+                     url.includes('127.0.0.1') ||
+                     url.includes('sslmode=disable');
+
+  return {
+    connectionString: url,
+    ssl: isInternal ? false : { rejectUnauthorized: false }
+  };
+}
+
+const poolConfig = getPoolConfig();
+export const pool = poolConfig ? new Pool(poolConfig) : null;
 
 export function generateToken() {
   return crypto.randomBytes(16).toString('hex');
@@ -447,15 +459,18 @@ export let mockTickets = [];
 
 export let mockLeads = [];
 
+export let isDbConnected = false;
+
 export async function initDb() {
-  if (config.useMockDb) {
-    console.log('[DB] Using In-Memory Database.');
+  if (!pool || config.useMockDb) {
+    console.log('[DB] No PostgreSQL DATABASE_URL or MOCK_DB=true. Using In-Memory Database.');
     return;
   }
   
   try {
     const client = await pool.connect();
-    console.log('[DB] Connecting to PostgreSQL & verifying schema...');
+    isDbConnected = true;
+    console.log('[DB] ✓ Successfully connected to PostgreSQL (' + (poolConfig?.ssl ? 'SSL' : 'Internal Non-SSL') + ') & verifying schema...');
 
     // 1. Leads Table
     await client.query(`
@@ -536,21 +551,25 @@ export async function initDb() {
     console.log('[DB] PostgreSQL schema & templates verified successfully.');
     client.release();
   } catch (err) {
-    console.warn('[DB] PostgreSQL connection unavailable. Falling back to In-Memory DB:', err.message);
-    config.useMockDb = true;
+    console.error('[DB] ❌ PostgreSQL Connection Failed:', err.message);
+    isDbConnected = false;
+    // Do not silently set useMockDb if user provided DATABASE_URL
+    if (!config.databaseUrl) {
+      config.useMockDb = true;
+    }
   }
 }
 
 export async function query(text, params = []) {
-  if (config.useMockDb) {
+  if (config.useMockDb || !pool) {
     return handleMockQuery(text, params);
   }
 
   try {
     return await pool.query(text, params);
   } catch (err) {
-    console.error('[DB] Query Error, failing over to mock:', err.message);
-    config.useMockDb = true;
+    console.error('[DB] PostgreSQL Query Error:', err.message, 'Query:', text.substring(0, 100));
+    // If pool is dead, fallback to mock to avoid crashing but log loudly
     return handleMockQuery(text, params);
   }
 }

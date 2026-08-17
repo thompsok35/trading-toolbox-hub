@@ -1,3 +1,14 @@
+import { isDbConnected } from '../db/connection.js';
+
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    database: isDbConnected ? 'PostgreSQL (Persistent)' : (process.env.DATABASE_URL ? 'PostgreSQL (Connecting...)' : 'In-Memory (Ephemeral)'),
+    isPersistent: isDbConnected || !!process.env.DATABASE_URL,
+    timestamp: new Date().toISOString()
+  });
+});
+
 import { Router } from 'express';
 import { publicController } from '../controllers/public.controller.js';
 
