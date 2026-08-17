@@ -1,4 +1,8 @@
+import { Router } from 'express';
+import { publicController } from '../controllers/public.controller.js';
 import { isDbConnected } from '../db/connection.js';
+
+const router = Router();
 
 router.get('/health', (req, res) => {
   res.json({
@@ -8,11 +12,6 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-import { Router } from 'express';
-import { publicController } from '../controllers/public.controller.js';
-
-const router = Router();
 
 router.post('/leads', (req, res) => publicController.captureLead(req, res));
 router.post('/leads/heartbeat', (req, res) => publicController.heartbeat(req, res));
