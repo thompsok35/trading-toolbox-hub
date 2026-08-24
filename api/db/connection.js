@@ -983,16 +983,44 @@ function handleMockQuery(text, params) {
   if (normalized.includes('update app_entitlements')) {
     const userId = params[0];
     let ent = mockEntitlements.find(e => e.user_id === userId);
-    if (ent) {
-      if (normalized.includes('ai_coach_status =')) {
-        ent.ai_coach_status = params[1] !== undefined ? params[1] : ent.ai_coach_status;
-      }
-      if (normalized.includes('ai_coach_access =')) {
-        ent.ai_coach_access = params[1] !== undefined ? params[1] : ent.ai_coach_access;
-      }
-      ent.updated_at = new Date();
+    if (!ent) {
+      ent = {
+        user_id: userId,
+        opus_access: true,
+        opus_tradier_connected: false,
+        ai_coach_access: false,
+        ai_coach_status: 'pending_approval',
+        ai_coach_approved_at: null,
+        alerts_access: true,
+        alerts_sms_limit: 10,
+        cashmap_access: true,
+        dataservices_access: true,
+        itm_bot_access: true,
+        itm_bot_mode: 'paper_only',
+        updated_at: new Date()
+      };
+      mockEntitlements.push(ent);
     }
-    return { rows: [ent || {}] };
+
+    const setClauseMatch = text.match(/set\s+(.*?)\s+where/i);
+    if (setClauseMatch) {
+      const assignments = setClauseMatch[1].split(',');
+      assignments.forEach(assign => {
+        const parts = assign.trim().split('=');
+        if (parts.length === 2) {
+          const col = parts[0].trim();
+          const paramMatch = parts[1].trim().match(/\$(\d+)/);
+          if (paramMatch && col !== 'updated_at') {
+            const paramIdx = parseInt(paramMatch[1], 10) - 1;
+            if (paramIdx >= 0 && paramIdx < params.length) {
+              ent[col] = params[paramIdx];
+            }
+          }
+        }
+      });
+    }
+    ent.updated_at = new Date();
+    return { rows: [ent] };
   }
 
   if (normalized.includes('insert into subscriptions')) {

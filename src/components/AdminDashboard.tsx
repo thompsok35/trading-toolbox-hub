@@ -28,7 +28,16 @@ import {
   Code,
   Smartphone,
   Monitor,
-  Check
+  Check,
+  Cpu,
+  Wallet,
+  Bell,
+  Bot,
+  LayoutDashboard,
+  Activity,
+  Sliders,
+  Package,
+  Layers
 } from 'lucide-react';
 
 interface Note {
@@ -113,6 +122,25 @@ const AdminDashboard: React.FC = () => {
   const [customerSearch, setCustomerSearch] = useState('');
   const [isApprovingCoach, setIsApprovingCoach] = useState<string | null>(null);
   
+  // Entitlements Manager Modal State
+  const [isEntitlementsModalOpen, setIsEntitlementsModalOpen] = useState(false);
+  const [selectedCustomerForEntitlements, setSelectedCustomerForEntitlements] = useState<any | null>(null);
+  const [entitlementsForm, setEntitlementsForm] = useState<any>({
+    opus_access: true,
+    opus_tradier_connected: false,
+    ai_coach_access: false,
+    ai_coach_status: 'pending_approval',
+    alerts_access: true,
+    alerts_sms_limit: 10,
+    cashmap_access: true,
+    dataservices_access: true,
+    itm_bot_access: true,
+    itm_bot_mode: 'paper_only',
+    plan_tier: 'free_tier'
+  });
+  const [savingEntitlements, setSavingEntitlements] = useState(false);
+  const [entitlementsFeedback, setEntitlementsFeedback] = useState<string | null>(null);
+
   // CRM Data State
   const [leads, setLeads] = useState<Lead[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -342,6 +370,182 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleOpenEntitlementsModal = (customer: any) => {
+    setSelectedCustomerForEntitlements(customer);
+    setEntitlementsForm({
+      opus_access: customer.opus_access !== false,
+      opus_tradier_connected: Boolean(customer.opus_tradier_connected),
+      ai_coach_access: Boolean(customer.ai_coach_access),
+      ai_coach_status: customer.ai_coach_status || 'pending_approval',
+      alerts_access: customer.alerts_access !== false,
+      alerts_sms_limit: customer.alerts_sms_limit || 10,
+      cashmap_access: customer.cashmap_access !== false,
+      dataservices_access: customer.dataservices_access !== false,
+      itm_bot_access: customer.itm_bot_access !== false,
+      itm_bot_mode: customer.itm_bot_mode || 'paper_only',
+      plan_tier: customer.plan_tier || 'free_tier'
+    });
+    setEntitlementsFeedback(null);
+    setIsEntitlementsModalOpen(true);
+  };
+
+  const applyPreset = (preset: 'full' | 'income' | 'bot_alerts' | 'research' | 'free') => {
+    if (preset === 'full') {
+      setEntitlementsForm((prev: any) => ({
+        ...prev,
+        opus_access: true,
+        ai_coach_access: true,
+        ai_coach_status: 'approved',
+        alerts_access: true,
+        alerts_sms_limit: 50,
+        cashmap_access: true,
+        dataservices_access: true,
+        itm_bot_access: true,
+        itm_bot_mode: 'live_enabled',
+        plan_tier: 'vip_elite'
+      }));
+    } else if (preset === 'income') {
+      setEntitlementsForm((prev: any) => ({
+        ...prev,
+        opus_access: true,
+        cashmap_access: true,
+        ai_coach_access: false,
+        ai_coach_status: 'pending_approval',
+        alerts_access: false,
+        dataservices_access: false,
+        itm_bot_access: false,
+        plan_tier: 'pro_suite'
+      }));
+    } else if (preset === 'bot_alerts') {
+      setEntitlementsForm((prev: any) => ({
+        ...prev,
+        opus_access: false,
+        cashmap_access: false,
+        ai_coach_access: false,
+        ai_coach_status: 'pending_approval',
+        alerts_access: true,
+        alerts_sms_limit: 25,
+        dataservices_access: false,
+        itm_bot_access: true,
+        itm_bot_mode: 'live_enabled',
+        plan_tier: 'pro_suite'
+      }));
+    } else if (preset === 'research') {
+      setEntitlementsForm((prev: any) => ({
+        ...prev,
+        opus_access: false,
+        cashmap_access: false,
+        ai_coach_access: true,
+        ai_coach_status: 'approved',
+        alerts_access: false,
+        dataservices_access: true,
+        itm_bot_access: false,
+        plan_tier: 'pro_suite'
+      }));
+    } else if (preset === 'free') {
+      setEntitlementsForm((prev: any) => ({
+        ...prev,
+        opus_access: true,
+        cashmap_access: true,
+        ai_coach_access: false,
+        ai_coach_status: 'pending_approval',
+        alerts_access: true,
+        alerts_sms_limit: 10,
+        dataservices_access: true,
+        itm_bot_access: true,
+        itm_bot_mode: 'paper_only',
+        plan_tier: 'free_tier'
+      }));
+    }
+  };
+
+  const handleToggleSingleEntitlement = async (customerId: string, field: string, currentValue: boolean | string) => {
+    try {
+      let newValue: any;
+      if (typeof currentValue === 'boolean') {
+        newValue = !currentValue;
+      } else if (field === 'ai_coach_status') {
+        newValue = currentValue === 'approved' ? 'pending_approval' : 'approved';
+      } else if (field === 'itm_bot_mode') {
+        newValue = currentValue === 'live_enabled' ? 'paper_only' : 'live_enabled';
+      }
+
+      const updates: any = { [field]: newValue };
+      if (field === 'ai_coach_status') {
+        updates.ai_coach_access = newValue === 'approved';
+      }
+
+      const res = await fetch(`/api/v1/entitlements/users/${customerId}/entitlements`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (res.ok) {
+        // Optimistic UI update
+        setCustomers(prev => prev.map(c => c.id === customerId ? { ...c, ...updates } : c));
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveEntitlements = async () => {
+    if (!selectedCustomerForEntitlements) return;
+    setSavingEntitlements(true);
+    try {
+      const res1 = await fetch(`/api/v1/entitlements/users/${selectedCustomerForEntitlements.id}/entitlements`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({
+          opus_access: entitlementsForm.opus_access,
+          opus_tradier_connected: entitlementsForm.opus_tradier_connected,
+          ai_coach_access: entitlementsForm.ai_coach_access,
+          ai_coach_status: entitlementsForm.ai_coach_status,
+          alerts_access: entitlementsForm.alerts_access,
+          alerts_sms_limit: parseInt(entitlementsForm.alerts_sms_limit, 10),
+          cashmap_access: entitlementsForm.cashmap_access,
+          dataservices_access: entitlementsForm.dataservices_access,
+          itm_bot_access: entitlementsForm.itm_bot_access,
+          itm_bot_mode: entitlementsForm.itm_bot_mode
+        })
+      });
+
+      const res2 = await fetch(`/api/v1/entitlements/users/${selectedCustomerForEntitlements.id}/subscription`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': password
+        },
+        body: JSON.stringify({
+          planTier: entitlementsForm.plan_tier,
+          status: 'active'
+        })
+      });
+
+      if (res1.ok && res2.ok) {
+        setEntitlementsFeedback('Entitlements and subscription saved successfully!');
+        setTimeout(() => {
+          setIsEntitlementsModalOpen(false);
+          fetchData(password);
+        }, 600);
+      } else {
+        setEntitlementsFeedback('Error saving entitlements.');
+      }
+    } catch (err: any) {
+      setEntitlementsFeedback(err.message || 'Failed to save entitlements');
+    } finally {
+      setSavingEntitlements(false);
     }
   };
 
@@ -995,99 +1199,172 @@ const AdminDashboard: React.FC = () => {
               />
             </div>
 
-            <div className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-white/5 bg-slate-950/60 text-[11px] uppercase font-bold text-slate-400 tracking-wider">
-                    <th className="p-4">Customer</th>
-                    <th className="p-4">Subscription Tier</th>
-                    <th className="p-4">Opus / Tradier</th>
-                    <th className="p-4">AI Coach (RAG Gate)</th>
-                    <th className="p-4">ITM BOT / Alerts</th>
-                    <th className="p-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-xs">
-                  {customers
-                    .filter(c => !customerSearch || c.email?.toLowerCase().includes(customerSearch.toLowerCase()) || c.name?.toLowerCase().includes(customerSearch.toLowerCase()))
-                    .map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-900/40 transition-colors">
-                        <td className="p-4">
-                          <div className="font-bold text-white">{c.name || 'Trader'}</div>
-                          <div className="text-slate-400 font-mono text-[11px]">{c.email}</div>
-                        </td>
-                        <td className="p-4">
-                          <select
-                            value={c.plan_tier || 'free_tier'}
-                            onChange={(e) => handleUpdateTier(c.id, e.target.value)}
-                            className="bg-slate-950 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-semibold cursor-pointer"
-                          >
-                            <option value="free_tier">🌱 Free Tier</option>
-                            <option value="pro_suite">⚡ Pro Suite ($49/mo)</option>
-                            <option value="vip_elite">👑 VIP Elite ($99/mo)</option>
-                          </select>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">Opus: ON</span>
-                            {c.opus_tradier_connected ? (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">Tradier 🟢</span>
-                            ) : (
-                              <span className="text-[10px] text-slate-500">No Broker</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            {c.ai_coach_status === 'approved' ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                                Approved ✅
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                Pending Review ⏳
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
-                              BOT: {c.itm_bot_mode === 'live_enabled' ? 'Live' : 'Paper'}
-                            </span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">
-                              SMS: {c.alerts_sms_limit || 10}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button
-                            disabled={isApprovingCoach === c.id}
-                            onClick={() => handleApproveCoach(c.id, c.ai_coach_status === 'approved')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                              c.ai_coach_status === 'approved'
-                                ? 'bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 border border-white/10'
-                                : 'bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-500/20'
-                            }`}
-                          >
-                            {isApprovingCoach === c.id 
-                              ? 'Saving...' 
-                              : c.ai_coach_status === 'approved' 
-                              ? 'Revoke Coach Access' 
-                              : '1-Click Approve AI Coach ✅'}
-                          </button>
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[900px]">
+                  <thead>
+                    <tr className="border-b border-white/5 bg-slate-950/70 text-[11px] uppercase font-bold text-slate-400 tracking-wider">
+                      <th className="p-4">Customer</th>
+                      <th className="p-4">Subscription Tier</th>
+                      <th className="p-4">6 Applications Entitlement Matrix</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-xs">
+                    {customers
+                      .filter(c => !customerSearch || c.email?.toLowerCase().includes(customerSearch.toLowerCase()) || c.name?.toLowerCase().includes(customerSearch.toLowerCase()))
+                      .map((c) => (
+                        <tr key={c.id} className="hover:bg-slate-900/50 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              {c.avatar_url ? (
+                                <img src={c.avatar_url} alt="" className="w-8 h-8 rounded-xl object-cover border border-white/10" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center border border-blue-500/30">
+                                  {c.name ? c.name.charAt(0).toUpperCase() : 'T'}
+                                </div>
+                              )}
+                              <div>
+                                <div className="font-bold text-white flex items-center gap-1.5">
+                                  {c.name || 'Trader'}
+                                  {c.google_id && <span className="text-[9px] px-1 py-0.2 bg-blue-500/20 text-blue-300 rounded font-mono">Google</span>}
+                                </div>
+                                <div className="text-slate-400 font-mono text-[11px]">{c.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <select
+                              value={c.plan_tier || 'free_tier'}
+                              onChange={(e) => handleUpdateTier(c.id, e.target.value)}
+                              className="bg-slate-950 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-semibold cursor-pointer focus:ring-1 focus:ring-blue-500"
+                            >
+                              <option value="free_tier">🌱 Free Tier</option>
+                              <option value="pro_suite">⚡ Pro Suite ($49/mo)</option>
+                              <option value="vip_elite">👑 VIP Elite ($99/mo)</option>
+                            </select>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {/* 1. Opus Engine Toggle */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'opus_access', c.opus_access !== false)}
+                                title="Click to toggle Opus Engine access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.opus_access !== false 
+                                    ? 'bg-blue-500/20 border-blue-500/40 text-blue-300 hover:bg-blue-500/30' 
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.opus_access !== false ? '⚡ Opus: ON' : '✕ Opus: OFF'}
+                              </button>
+
+                              {/* 2. AI Options Coach */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'ai_coach_status', c.ai_coach_status || 'pending_approval')}
+                                title="Click to toggle Coach approval"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.ai_coach_status === 'approved'
+                                    ? 'bg-teal-500/20 border-teal-500/40 text-teal-300 hover:bg-teal-500/30'
+                                    : c.ai_coach_status === 'pending_approval'
+                                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30'
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.ai_coach_status === 'approved' ? '🤖 Coach: OK' : c.ai_coach_status === 'pending_approval' ? '⏳ Coach: Pending' : '✕ Coach: OFF'}
+                              </button>
+
+                              {/* 3. Alerts Engine */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'alerts_access', c.alerts_access !== false)}
+                                title="Click to toggle Alerts Engine access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.alerts_access !== false 
+                                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 hover:bg-rose-500/30' 
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.alerts_access !== false ? `🚨 Alerts (${c.alerts_sms_limit || 10})` : '✕ Alerts: OFF'}
+                              </button>
+
+                              {/* 4. CashMap Planner */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'cashmap_access', c.cashmap_access !== false)}
+                                title="Click to toggle CashMap access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.cashmap_access !== false 
+                                    ? 'bg-teal-500/20 border-teal-500/40 text-teal-300 hover:bg-teal-500/30' 
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.cashmap_access !== false ? '📊 CashMap: ON' : '✕ CashMap: OFF'}
+                              </button>
+
+                              {/* 5. DataServices Scanner */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'dataservices_access', c.dataservices_access !== false)}
+                                title="Click to toggle DataServices Scanner access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.dataservices_access !== false 
+                                    ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/30' 
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.dataservices_access !== false ? '🔍 Scanner: ON' : '✕ Scanner: OFF'}
+                              </button>
+
+                              {/* 6. ITM BOT */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'itm_bot_access', c.itm_bot_access !== false)}
+                                title="Click to toggle ITM BOT access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.itm_bot_access !== false 
+                                    ? (c.itm_bot_mode === 'live_enabled' 
+                                        ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/30' 
+                                        : 'bg-teal-500/20 border-teal-500/40 text-teal-300 hover:bg-teal-500/30')
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.itm_bot_access !== false ? (c.itm_bot_mode === 'live_enabled' ? '⚡ BOT: Live' : '📝 BOT: Paper') : '✕ BOT: OFF'}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="p-4 text-right space-x-2">
+                            <button
+                              onClick={() => handleOpenEntitlementsModal(c)}
+                              className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 text-blue-300 rounded-lg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
+                            >
+                              <Sliders className="w-3.5 h-3.5" /> Manage 6 Apps
+                            </button>
+                            
+                            <button
+                              disabled={isApprovingCoach === c.id}
+                              onClick={() => handleApproveCoach(c.id, c.ai_coach_status === 'approved')}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                c.ai_coach_status === 'approved'
+                                  ? 'bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-200 border border-white/10'
+                                  : 'bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-500/20'
+                              }`}
+                            >
+                              {isApprovingCoach === c.id 
+                                ? 'Saving...' 
+                                : c.ai_coach_status === 'approved' 
+                                ? 'Revoke Coach' 
+                                : 'Approve Coach ✅'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    {customers.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-slate-500 text-xs">
+                          No registered users found yet. Users will appear here automatically when they log in to any suite app or register on the portal!
                         </td>
                       </tr>
-                    ))}
-                  {customers.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-500 text-xs">
-                        No registered users found yet. Users will appear here automatically when they log in to any suite app or register on the portal!
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -2377,6 +2654,297 @@ const AdminDashboard: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+        {/* ========================================================================= */}
+        {/* MODAL: MANAGE 6-APP ENTITLEMENTS & SUBSCRIPTIONS */}
+        {/* ========================================================================= */}
+        {isEntitlementsModalOpen && selectedCustomerForEntitlements && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-slate-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setIsEntitlementsModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Modal Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                  <Sliders className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">Manage 6-App Entitlements</h2>
+                  <p className="text-xs text-slate-400 font-mono mt-0.5">
+                    {selectedCustomerForEntitlements.name} &bull; {selectedCustomerForEntitlements.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="mb-6 p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5 text-blue-400" /> Fast Preset Bundles (1-Click Apply)
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('full')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/30 to-indigo-600/30 border border-blue-500/40 text-blue-200 hover:border-blue-400 hover:scale-105 transition-all cursor-pointer"
+                  >
+                    ⚡ Full Suite (6 of 6)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('income')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 border border-white/10 text-teal-300 hover:border-teal-500/40 transition-all cursor-pointer"
+                  >
+                    📊 Income Core (Opus + CashMap)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('bot_alerts')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 border border-white/10 text-cyan-300 hover:border-cyan-500/40 transition-all cursor-pointer"
+                  >
+                    🤖 BOT & Alerts (2 of 6)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('research')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 border border-white/10 text-purple-300 hover:border-purple-500/40 transition-all cursor-pointer"
+                  >
+                    🔍 Research (Scanner + AI Coach)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('free')}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 border border-white/10 text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+                  >
+                    🌱 Free Tier Default
+                  </button>
+                </div>
+              </div>
+
+              {/* Subscription Plan Tier */}
+              <div className="mb-6 p-4 rounded-2xl bg-slate-950/80 border border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-white uppercase tracking-wider">
+                    Assigned Subscription Tier
+                  </label>
+                  <p className="text-[11px] text-slate-400">Controls billing tier badge and customer portal rank.</p>
+                </div>
+                <select
+                  value={entitlementsForm.plan_tier || 'free_tier'}
+                  onChange={(e) => setEntitlementsForm({ ...entitlementsForm, plan_tier: e.target.value })}
+                  className="bg-slate-900 border border-white/15 rounded-xl px-3 py-2 text-xs text-white font-bold cursor-pointer"
+                >
+                  <option value="free_tier">🌱 Free Tier ($0/mo)</option>
+                  <option value="pro_suite">⚡ Pro Suite ($49/mo)</option>
+                  <option value="vip_elite">👑 VIP Elite ($99/mo)</option>
+                </select>
+              </div>
+
+              {/* 6 Individual Tool Cards */}
+              <div className="space-y-3 mb-6">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-teal-400" /> Individual Application Access Controls
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  
+                  {/* 1. Opus Engine */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.opus_access ? 'bg-slate-950 border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400"><LayoutDashboard className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">Opus Analysis Engine</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.opus_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, opus_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">Covered calls, spreads, live P&L breakdown.</p>
+                  </div>
+
+                  {/* 2. AI Options Coach */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.ai_coach_access || entitlementsForm.ai_coach_status === 'approved' ? 'bg-slate-950 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400"><Bot className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">Opus AI Options Coach</span>
+                      </div>
+                      <select
+                        value={entitlementsForm.ai_coach_status}
+                        onChange={(e) => setEntitlementsForm({ 
+                          ...entitlementsForm, 
+                          ai_coach_status: e.target.value,
+                          ai_coach_access: e.target.value === 'approved'
+                        })}
+                        className="bg-slate-900 border border-white/15 rounded-lg px-2 py-1 text-[11px] font-bold text-purple-300 cursor-pointer"
+                      >
+                        <option value="approved">Approved ✅</option>
+                        <option value="pending_approval">Pending ⏳</option>
+                        <option value="rejected">Revoked 🚫</option>
+                      </select>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">Proprietary RAG knowledge base access.</p>
+                  </div>
+
+                  {/* 3. Alerts Engine */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.alerts_access ? 'bg-slate-950 border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400"><Bell className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">Alerts Engine</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.alerts_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, alerts_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                      <span className="text-[10px] text-slate-400">Monthly SMS Quota:</span>
+                      <select
+                        value={entitlementsForm.alerts_sms_limit}
+                        onChange={(e) => setEntitlementsForm({ ...entitlementsForm, alerts_sms_limit: parseInt(e.target.value, 10) })}
+                        className="bg-slate-900 border border-white/15 rounded px-2 py-0.5 text-[10px] font-bold text-white"
+                      >
+                        <option value={10}>10 SMS / mo</option>
+                        <option value={25}>25 SMS / mo</option>
+                        <option value={50}>50 SMS / mo</option>
+                        <option value={100}>100 SMS / mo</option>
+                        <option value={500}>Unlimited (500)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 4. CashMap Planner */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.cashmap_access ? 'bg-slate-950 border-teal-500/40 shadow-[0_0_15px_rgba(20,184,166,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-teal-500/10 text-teal-400"><Wallet className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">CashMap Planner</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.cashmap_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, cashmap_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">Option premium cash flow & dividend calendars.</p>
+                  </div>
+
+                  {/* 5. DataServices Scanner */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.dataservices_access ? 'bg-slate-950 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400"><Activity className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">DataServices Scanner</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.dataservices_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, dataservices_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">Stock health metrics & DCF valuations.</p>
+                  </div>
+
+                  {/* 6. ITM BOT */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.itm_bot_access ? 'bg-slate-950 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400"><Cpu className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">ITM Covered Call BOT</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.itm_bot_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, itm_bot_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                      <span className="text-[10px] text-slate-400">Execution Mode:</span>
+                      <select
+                        value={entitlementsForm.itm_bot_mode}
+                        onChange={(e) => setEntitlementsForm({ ...entitlementsForm, itm_bot_mode: e.target.value })}
+                        className="bg-slate-900 border border-white/15 rounded px-2 py-0.5 text-[10px] font-bold text-white"
+                      >
+                        <option value="paper_only">📝 Paper Trading Only</option>
+                        <option value="live_enabled">⚡ Live Brokerage Authorized</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
+                <span className="text-xs text-teal-400 font-semibold">{entitlementsFeedback}</span>
+                
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsEntitlementsModalOpen(false)}
+                    className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={savingEntitlements}
+                    onClick={handleSaveEntitlements}
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-blue-500/25 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {savingEntitlements ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    Save Entitlements & Subscription
+                  </button>
+                </div>
+              </div>
+
             </motion.div>
           </div>
         )}

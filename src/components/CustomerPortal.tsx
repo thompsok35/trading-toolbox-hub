@@ -166,7 +166,6 @@ export const CustomerPortal: React.FC = () => {
         width: 300,
         logo_alignment: 'left'
       });
-      // Re-trigger prompt when on login screen
       window.google.accounts.id.prompt();
     }
   }, [userData, googleClientId]);
@@ -181,6 +180,13 @@ export const CustomerPortal: React.FC = () => {
     if (window.google?.accounts?.id) {
       window.google.accounts.id.disableAutoSelect();
     }
+  };
+
+  const handleRequestAccess = (appName: string, appContextKey: string) => {
+    setTicketAppContext(appContextKey);
+    setTicketSubject(`Requesting access to ${appName}`);
+    setTicketMessage(`Hi Keith, I would like to add access to ${appName} to my MyTradingToolbox account.`);
+    document.getElementById('support-desk')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleSupportSubmit = async (e: React.FormEvent) => {
@@ -305,7 +311,7 @@ export const CustomerPortal: React.FC = () => {
                       Welcome to MyTradingToolbox, {currentUser.name}! 🎉
                     </h3>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Your member account has been registered. You have active access to the 6 suite applications below.
+                      Your member account has been registered. You have access to your assigned suite applications below.
                     </p>
                   </div>
                 </div>
@@ -375,7 +381,7 @@ export const CustomerPortal: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 {/* 1. Opus Engine */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-blue-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.opus_access !== false ? 'border-white/5 hover:border-blue-500/30' : 'border-rose-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400"><LayoutDashboard className="w-4 h-4" /></div>
@@ -384,16 +390,29 @@ export const CustomerPortal: React.FC = () => {
                         <div className="text-[10px] text-slate-400">Multi-Leg & Buy-Writes</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    {ent.opus_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400">Tradier Brokerage: {ent.opus_tradier_connected ? 'Connected 🟢' : 'Ready to Connect'}</p>
-                  <a href="https://opus.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
-                    Launch Opus Engine <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {ent.opus_access !== false ? (
+                    <a href="https://opus.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1">
+                      Launch Opus Engine <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('Opus Analysis Engine', 'opus')}
+                      className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Access / Upgrade &rarr;
+                    </button>
+                  )}
                 </div>
 
                 {/* 2. AI Options Coach (RAG Gate) */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-purple-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.ai_coach_access && ent.ai_coach_status === 'approved' ? 'border-white/5 hover:border-purple-500/30' : 'border-purple-500/20 opacity-90'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400"><Bot className="w-4 h-4" /></div>
@@ -404,22 +423,33 @@ export const CustomerPortal: React.FC = () => {
                     </div>
                     {ent.ai_coach_status === 'approved' ? (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Approved ✅</span>
-                    ) : (
+                    ) : ent.ai_coach_status === 'pending_approval' ? (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Pending Review ⏳</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
                     )}
                   </div>
                   <p className="text-xs text-slate-400">
                     {ent.ai_coach_status === 'approved' 
                       ? 'Access granted by Keith. Full RAG trade coaching active.' 
-                      : 'Proprietary knowledge base. Access request is in review.'}
+                      : 'Proprietary knowledge base. Requires Admin approval.'}
                   </p>
-                  <a href="https://coach.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
-                    Launch AI Coach <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {ent.ai_coach_status === 'approved' ? (
+                    <a href="https://coach.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1">
+                      Launch AI Coach <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('Opus AI Options Coach (RAG Gate)', 'ai_coach')}
+                      className="text-xs text-purple-400 hover:text-purple-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Coach Approval &rarr;
+                    </button>
+                  )}
                 </div>
 
                 {/* 3. Alerts Engine */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-rose-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.alerts_access !== false ? 'border-white/5 hover:border-rose-500/30' : 'border-rose-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400"><Bell className="w-4 h-4" /></div>
@@ -428,16 +458,29 @@ export const CustomerPortal: React.FC = () => {
                         <div className="text-[10px] text-slate-400">Strike & Volatility Telemetry</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    {ent.alerts_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400">SMS Allotment: {ent.alerts_sms_limit || 10} SMS alerts / month</p>
-                  <a href="https://alerts.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
-                    Launch Alerts <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {ent.alerts_access !== false ? (
+                    <a href="https://alerts.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1">
+                      Launch Alerts <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('Opus Alerting Engine', 'alerts')}
+                      className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Access / Add SMS &rarr;
+                    </button>
+                  )}
                 </div>
 
                 {/* 4. CashMap Planner */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-teal-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.cashmap_access !== false ? 'border-white/5 hover:border-teal-500/30' : 'border-teal-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400"><Wallet className="w-4 h-4" /></div>
@@ -446,16 +489,29 @@ export const CustomerPortal: React.FC = () => {
                         <div className="text-[10px] text-slate-400">Income & Dividend Forecasts</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    {ent.cashmap_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400">Syncs option premium cash flow directly with Opus.</p>
-                  <a href="https://cashmap.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-1">
-                    Launch CashMap <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {ent.cashmap_access !== false ? (
+                    <a href="https://cashmap.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-1">
+                      Launch CashMap <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('CashMap Planner', 'cashmap')}
+                      className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Access &rarr;
+                    </button>
+                  )}
                 </div>
 
                 {/* 5. DataServices Scanner */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-indigo-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.dataservices_access !== false ? 'border-white/5 hover:border-indigo-500/30' : 'border-indigo-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400"><Activity className="w-4 h-4" /></div>
@@ -464,16 +520,29 @@ export const CustomerPortal: React.FC = () => {
                         <div className="text-[10px] text-slate-400">Stock Health & Screeners</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    {ent.dataservices_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400">Institutional health metrics & DCF valuations.</p>
-                  <a href="https://dataservices.mytradingtoolbox.com/login" target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
-                    Launch DataServices <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {ent.dataservices_access !== false ? (
+                    <a href="https://dataservices.mytradingtoolbox.com/login" target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1">
+                      Launch DataServices <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('DataServices Scanner', 'dataservices')}
+                      className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Access &rarr;
+                    </button>
+                  )}
                 </div>
 
                 {/* 6. ITM Covered Call BOT */}
-                <div className="bg-slate-900/50 border border-white/5 p-5 rounded-2xl space-y-3 hover:border-cyan-500/30 transition-colors">
+                <div className={`bg-slate-900/50 border ${ent.itm_bot_access !== false ? 'border-white/5 hover:border-cyan-500/30' : 'border-cyan-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400"><Cpu className="w-4 h-4" /></div>
@@ -482,26 +551,39 @@ export const CustomerPortal: React.FC = () => {
                         <div className="text-[10px] text-slate-400">Semi-Automated Strategy</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                      {ent.itm_bot_mode === 'live_enabled' ? 'Live Mode ⚡' : 'Paper Mode 📝'}
-                    </span>
+                    {ent.itm_bot_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        {ent.itm_bot_mode === 'live_enabled' ? 'Live Mode ⚡' : 'Paper Mode 📝'}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400">Risk-first downside buffer planning & trade continuity.</p>
-                  <Link to="/itm-covered-call-bot" className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1">
-                    Open BOT Portal <ExternalLink className="w-3 h-3" />
-                  </Link>
+                  {ent.itm_bot_access !== false ? (
+                    <Link to="/itm-covered-call-bot" className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1">
+                      Open BOT Portal <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('ITM Covered Call Strategy BOT', 'itm_bot')}
+                      className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request BOT Access &rarr;
+                    </button>
+                  )}
                 </div>
 
               </div>
             </div>
 
             {/* Customer Support Desk Form */}
-            <div className="bg-slate-900/60 border border-white/10 p-6 rounded-3xl backdrop-blur-xl space-y-4">
+            <div id="support-desk" className="bg-slate-900/60 border border-white/10 p-6 rounded-3xl backdrop-blur-xl space-y-4">
               <div className="flex items-center gap-2 text-white font-bold">
                 <HelpCircle className="w-5 h-5 text-blue-400" />
-                <span>Need Help, Account Support, or Feature Inquiries?</span>
+                <span>Need Help, Account Support, or Tool Access Inquiries?</span>
               </div>
-              <p className="text-xs text-slate-400">Submit a support request directly to Keith Thompson and the development team.</p>
+              <p className="text-xs text-slate-400">Submit a support or application authorization request directly to Keith Thompson.</p>
 
               <form onSubmit={handleSupportSubmit} className="space-y-3 pt-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -532,8 +614,7 @@ export const CustomerPortal: React.FC = () => {
                       onChange={(e) => setTicketSubject(e.target.value)}
                       placeholder="Brief summary of your question..."
                       className="w-full mt-1 bg-slate-950 border border-white/15 rounded-xl px-3 py-2 text-xs text-white"
-                    >
-                    </input>
+                    />
                   </div>
                 </div>
 
