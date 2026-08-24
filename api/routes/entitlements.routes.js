@@ -12,6 +12,8 @@ router.post('/support/tickets', (req, res) => entitlementsController.createTicke
 
 // Admin Protected Endpoints
 router.get('/users', adminAuth, (req, res) => entitlementsController.getUsers(req, res));
+router.delete('/users/:id', adminAuth, (req, res) => entitlementsController.deleteUser(req, res));
+router.post('/sync-customers', adminAuth, (req, res) => entitlementsController.syncCustomers(req, res));
 router.put('/users/:id/entitlements', adminAuth, (req, res) => entitlementsController.updateEntitlements(req, res));
 router.post('/users/:id/approve-coach', adminAuth, (req, res) => entitlementsController.approveAiCoach(req, res));
 router.put('/users/:id/subscription', adminAuth, (req, res) => entitlementsController.updateSubscription(req, res));

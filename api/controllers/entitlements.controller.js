@@ -204,6 +204,26 @@ export class EntitlementsController {
       res.status(500).json({ success: false, error: err.message });
     }
   }
+
+  async deleteUser(req, res) {
+    const { id } = req.params;
+    try {
+      const deleted = await userRepository.deleteUser(id);
+      if (!deleted) return res.status(404).json({ success: false, error: 'User account not found' });
+      res.json({ success: true, message: 'User deleted successfully' });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  async syncCustomers(req, res) {
+    try {
+      const users = await userRepository.getAllUsers();
+      res.json({ success: true, users });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
 }
 
 export const entitlementsController = new EntitlementsController();

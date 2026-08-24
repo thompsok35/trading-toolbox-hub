@@ -151,9 +151,24 @@ export class UserRepository {
   }
 
   async getAllUsers() {
+    // 1. Auto-sync any leads whose status is 'customer' into the users & entitlements tables
+    try {
+      const customerLeadsRes = await query(`SELECT email, name FROM leads WHERE LOWER(status) = 'customer'`);
+      if (customerLeadsRes && customerLeadsRes.rows) {
+        for (const lead of customerLeadsRes.rows) {
+          if (lead.email) {
+            await this.findOrCreateGoogleUser({ email: lead.email, name: lead.name });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[UserRepository] Auto-sync leads warning:', e.message);
+    }
+
     const queryString = `
       SELECT 
         u.id, u.email, u.name, u.phone, u.status, u.is_email_verified, u.created_at, u.last_login_at,
+        u.google_id, u.avatar_url,
         e.opus_access, e.opus_tradier_connected, e.ai_coach_access, e.ai_coach_status, e.ai_coach_approved_at,
         e.alerts_access, e.alerts_sms_limit, e.cashmap_access, e.dataservices_access, e.itm_bot_access, e.itm_bot_mode,
         s.plan_tier, s.status as subscription_status, s.stripe_customer_id
@@ -164,6 +179,13 @@ export class UserRepository {
     `;
     const res = await query(queryString);
     return res.rows;
+  }
+
+  async deleteUser(userId) {
+    await query(`DELETE FROM app_entitlements WHERE user_id = $1`, [userId]);
+    await query(`DELETE FROM subscriptions WHERE user_id = $1`, [userId]);
+    const res = await query(`DELETE FROM users WHERE id = $1 RETURNING *`, [userId]);
+    return res.rows[0] || null;
   }
 
   async updateEntitlements(userId, updates) {

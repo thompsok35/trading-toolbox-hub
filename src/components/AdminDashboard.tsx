@@ -549,6 +549,48 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleDeleteCustomer = async (userId: string, email: string) => {
+    if (!window.confirm(`Are you sure you want to delete user account ${email}? This will revoke their suite entitlements.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/entitlements/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-password': password
+        }
+      });
+      if (res.ok) {
+        setCustomers(prev => prev.filter(c => c.id !== userId));
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const [isSyncingCustomers, setIsSyncingCustomers] = useState(false);
+  const handleSyncCustomers = async () => {
+    setIsSyncingCustomers(true);
+    try {
+      const res = await fetch('/api/v1/entitlements/sync-customers', {
+        method: 'POST',
+        headers: {
+          'x-admin-password': password
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.users) setCustomers(data.users);
+        fetchData(password);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSyncingCustomers(false);
+    }
+  };
+
   const handleResolveTicket = async (ticketId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
@@ -1183,20 +1225,33 @@ const AdminDashboard: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-5 rounded-2xl border border-white/5">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-teal-400" /> Unified Customer Base & 6-App Entitlements
+                  <UserCheck className="w-5 h-5 text-teal-400" /> Unified Customer Base & 6-App Entitlements ({customers.length})
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
                   Manage access across Opus, AI Coach (Proprietary RAG Gate), Alerts, CashMap, DataServices, and ITM BOT.
                 </p>
               </div>
 
-              <input
-                type="text"
-                placeholder="Search customers..."
-                value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
-                className="bg-slate-950 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 w-full sm:w-64"
-              />
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={isSyncingCustomers}
+                  onClick={handleSyncCustomers}
+                  title="Sync all contacts marked as 'Customer' from the CRM Pipeline into the 6-App Entitlements base"
+                  className="px-3.5 py-2 bg-gradient-to-r from-teal-600/30 to-emerald-600/30 hover:from-teal-600/50 hover:to-emerald-600/50 border border-teal-500/40 text-teal-300 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-teal-500/10 shrink-0"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingCustomers ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingCustomers ? 'Syncing CRM...' : 'Sync CRM Customers 🔄'}</span>
+                </button>
+
+                <input
+                  type="text"
+                  placeholder="Search customers..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  className="bg-slate-950 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 w-full sm:w-64"
+                />
+              </div>
             </div>
 
             <div className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden shadow-xl">
@@ -1351,6 +1406,14 @@ const AdminDashboard: React.FC = () => {
                                 : c.ai_coach_status === 'approved' 
                                 ? 'Revoke Coach' 
                                 : 'Approve Coach ✅'}
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteCustomer(c.id, c.email)}
+                              title="Delete customer authentication account"
+                              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg border border-transparent hover:border-rose-500/20 transition-all cursor-pointer inline-flex items-center"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </td>
                         </tr>

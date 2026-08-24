@@ -1,4 +1,5 @@
 import { contactRepository } from '../db/repositories/contact.repository.js';
+import { userRepository } from '../db/repositories/user.repository.js';
 
 export class ContactsController {
   async getContacts(req, res) {
@@ -20,6 +21,14 @@ export class ContactsController {
       notes: initialNotes
     });
 
+    if (status === 'customer') {
+      try {
+        await userRepository.findOrCreateGoogleUser({ email, name });
+      } catch (e) {
+        console.warn('[ContactsController] Auto-provision user error:', e.message);
+      }
+    }
+
     res.json({ success: true, contact });
   }
 
@@ -27,6 +36,14 @@ export class ContactsController {
     const { id } = req.params;
     const contact = await contactRepository.updateContact(id, req.body);
     if (!contact) return res.status(404).json({ success: false, error: 'Contact not found' });
+
+    if (req.body.status === 'customer' && contact.email) {
+      try {
+        await userRepository.findOrCreateGoogleUser({ email: contact.email, name: contact.name });
+      } catch (e) {
+        console.warn('[ContactsController] Auto-provision user error:', e.message);
+      }
+    }
 
     res.json({ success: true, contact });
   }

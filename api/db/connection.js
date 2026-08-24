@@ -934,6 +934,39 @@ function handleMockQuery(text, params) {
     return { rows: [user] };
   }
 
+  if (normalized.includes('delete from users')) {
+    const id = params[0];
+    const idx = mockUsers.findIndex(u => u.id === id);
+    if (idx !== -1) {
+      const removed = mockUsers.splice(idx, 1);
+      return { rows: removed };
+    }
+    return { rows: [] };
+  }
+
+  if (normalized.includes('delete from app_entitlements')) {
+    const id = params[0];
+    const idx = mockEntitlements.findIndex(e => e.user_id === id);
+    if (idx !== -1) {
+      mockEntitlements.splice(idx, 1);
+    }
+    return { rows: [] };
+  }
+
+  if (normalized.includes('delete from subscriptions')) {
+    const id = params[0];
+    const idx = mockSubscriptions.findIndex(s => s.user_id === id);
+    if (idx !== -1) {
+      mockSubscriptions.splice(idx, 1);
+    }
+    return { rows: [] };
+  }
+
+  if (normalized.includes('from leads where lower(status) = \'customer\'')) {
+    const custs = mockLeads.filter(l => (l.status || '').toLowerCase() === 'customer');
+    return { rows: custs.map(c => ({ email: c.email, name: c.name })) };
+  }
+
   if (normalized.includes('update users set')) {
     const id = params[params.length - 1];
     let user = mockUsers.find(u => u.id === id || u.email.toLowerCase() === (id + '').toLowerCase());
