@@ -4,10 +4,12 @@ import publicRoutes from './public.routes.js';
 import contactsRoutes from './contacts.routes.js';
 import campaignsRoutes from './campaigns.routes.js';
 import analyticsRoutes from './analytics.routes.js';
+import authRoutes from './auth.routes.js';
 
 const router = Router();
 
 // Version 1 Routes
+router.use('/v1/auth', authRoutes);
 router.use('/v1/public', publicRoutes);
 router.use('/v1/contacts', contactsRoutes);
 router.use('/v1/campaigns', campaignsRoutes);
@@ -15,6 +17,7 @@ router.use('/v1/analytics', analyticsRoutes);
 router.use('/v1/entitlements', entitlementsRouter);
 
 // Backwards compatibility aliases
+router.use('/auth', authRoutes);
 router.use('/', publicRoutes);
 router.use('/admin/contacts', contactsRoutes);
 router.use('/admin/leads', contactsRoutes);

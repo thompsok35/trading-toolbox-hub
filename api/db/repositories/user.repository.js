@@ -12,14 +12,84 @@ export class UserRepository {
     return res.rows[0] || null;
   }
 
+  async findOrCreateGoogleUser({ email, name = '', googleId = '', avatarUrl = '' }) {
+    const cleanEmail = email.toLowerCase().trim();
+    let existing = await this.findByEmail(cleanEmail);
+    let isNewUser = false;
+
+    if (existing) {
+      // Update existing user with Google details and last login
+      await query(
+        `UPDATE users 
+         SET google_id = COALESCE($2, google_id),
+             avatar_url = COALESCE($3, avatar_url),
+             name = CASE WHEN (name IS NULL OR name = '' OR name = 'Trader') AND $4 != '' THEN $4 ELSE name END,
+             last_login_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [existing.id, googleId || null, avatarUrl || null, name ? name.trim() : '']
+      );
+    } else {
+      isNewUser = true;
+      const newId = 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+      const userRes = await query(
+        `INSERT INTO users (id, email, name, google_id, avatar_url, status, is_email_verified, last_login_at)
+         VALUES ($1, $2, $3, $4, $5, 'active', true, CURRENT_TIMESTAMP)
+         RETURNING *`,
+        [
+          newId,
+          cleanEmail,
+          name ? name.trim() : 'Trader',
+          googleId || null,
+          avatarUrl || null
+        ]
+      );
+      existing = userRes.rows[0];
+
+      // Default entitlements: Opus, CashMap, Alerts, DataServices, ITM Bot active, AI Coach pending
+      await query(
+        `INSERT INTO app_entitlements (
+          user_id, opus_access, opus_tradier_connected,
+          ai_coach_access, ai_coach_status,
+          alerts_access, alerts_sms_limit,
+          cashmap_access, dataservices_access,
+          itm_bot_access, itm_bot_mode
+        ) VALUES ($1, true, false, false, 'pending_approval', true, 10, true, true, true, 'paper_only')
+        ON CONFLICT (user_id) DO NOTHING`,
+        [existing.id]
+      );
+
+      // Default subscription (Free Tier)
+      await query(
+        `INSERT INTO subscriptions (user_id, plan_tier, status)
+         VALUES ($1, 'free_tier', 'active')
+         ON CONFLICT DO NOTHING`,
+        [existing.id]
+      );
+
+      // If user was a waitlist lead, upgrade lead status
+      try {
+        await query(
+          `UPDATE leads SET status = 'registered_member', last_accessed = CURRENT_TIMESTAMP WHERE LOWER(email) = $1`,
+          [cleanEmail]
+        );
+      } catch (leadErr) {
+        console.debug('[UserRepo] Could not update lead status:', leadErr.message);
+      }
+    }
+
+    const fullUser = await this.getUserWithDetails(existing.id);
+    return { user: fullUser, isNewUser };
+  }
+
   async getOrCreateUser(email, name = '', source = 'satellite_app') {
     let user = await this.findByEmail(email);
     if (!user) {
+      const newId = 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
       const userRes = await query(
-        `INSERT INTO users (email, name, status, is_email_verified)
-         VALUES ($1, $2, 'active', true)
+        `INSERT INTO users (id, email, name, status, is_email_verified)
+         VALUES ($1, $2, $3, 'active', true)
          RETURNING *`,
-        [email.toLowerCase().trim(), name ? name.trim() : 'Trader']
+        [newId, email.toLowerCase().trim(), name ? name.trim() : 'Trader']
       );
       user = userRes.rows[0];
 
@@ -52,7 +122,7 @@ export class UserRepository {
   }
 
   async getUserWithDetails(id) {
-    const userRes = await query('SELECT id, email, name, phone, status, is_email_verified, created_at, last_login_at FROM users WHERE id = $1', [id]);
+    const userRes = await query('SELECT id, email, name, google_id, avatar_url, phone, status, is_email_verified, created_at, last_login_at FROM users WHERE id = $1', [id]);
     if (!userRes.rows[0]) return null;
 
     const user = userRes.rows[0];

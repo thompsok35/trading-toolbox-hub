@@ -548,6 +548,84 @@ export async function initDb() {
       }
     }
 
+    // 3. Users Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        name TEXT DEFAULT '',
+        google_id TEXT,
+        avatar_url TEXT,
+        phone TEXT DEFAULT '',
+        status TEXT DEFAULT 'active',
+        is_email_verified BOOLEAN DEFAULT TRUE,
+        last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Column migrations for users
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='google_id') THEN
+          ALTER TABLE users ADD COLUMN google_id TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='avatar_url') THEN
+          ALTER TABLE users ADD COLUMN avatar_url TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='last_login_at') THEN
+          ALTER TABLE users ADD COLUMN last_login_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    // 4. App Entitlements Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS app_entitlements (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        opus_access BOOLEAN DEFAULT TRUE,
+        opus_tradier_connected BOOLEAN DEFAULT FALSE,
+        ai_coach_access BOOLEAN DEFAULT FALSE,
+        ai_coach_status TEXT DEFAULT 'pending_approval',
+        ai_coach_approved_at TIMESTAMP,
+        alerts_access BOOLEAN DEFAULT TRUE,
+        alerts_sms_limit INTEGER DEFAULT 10,
+        cashmap_access BOOLEAN DEFAULT TRUE,
+        dataservices_access BOOLEAN DEFAULT TRUE,
+        itm_bot_access BOOLEAN DEFAULT TRUE,
+        itm_bot_mode TEXT DEFAULT 'paper_only',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 5. Subscriptions Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        plan_tier TEXT DEFAULT 'free_tier',
+        status TEXT DEFAULT 'active',
+        stripe_customer_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 6. Support Tickets Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS support_tickets (
+        id SERIAL PRIMARY KEY,
+        user_id TEXT,
+        email TEXT NOT NULL,
+        app_context TEXT DEFAULT 'general',
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'open',
+        admin_notes TEXT DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('[DB] PostgreSQL schema & templates verified successfully.');
     client.release();
   } catch (err) {
@@ -821,34 +899,32 @@ function handleMockQuery(text, params) {
 
   
   // USERS & ENTITLEMENTS MOCK QUERIES
-  if (normalized.includes('select * from users where lower(email)')) {
+  if (normalized.includes('from users where lower(email)')) {
     const email = (params[0] || '').toLowerCase().trim();
     const user = mockUsers.find(u => u.email.toLowerCase() === email);
     return { rows: user ? [user] : [] };
   }
 
-  if (normalized.includes('select * from users where id =')) {
-    const id = params[0];
-    const user = mockUsers.find(u => u.id === id);
-    return { rows: user ? [user] : [] };
-  }
-
-  if (normalized.includes('select id, email, name, phone, status, is_email_verified, created_at, last_login_at from users where id =')) {
+  if (normalized.includes('from users where id =')) {
     const id = params[0];
     const user = mockUsers.find(u => u.id === id);
     return { rows: user ? [user] : [] };
   }
 
   if (normalized.includes('insert into users')) {
-    const email = (params[0] || '').toLowerCase().trim();
-    let name = params[1] || 'Trader';
-    if (params.length >= 3 && typeof params[2] === 'string' && params[2] !== '') {
-      name = params[2];
-    }
+    const newId = params.length >= 5 && params[0]?.startsWith?.('usr_') ? params[0] : ('usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+    const emailParam = params.length >= 5 && params[0]?.startsWith?.('usr_') ? params[1] : params[0];
+    const nameParam = params.length >= 5 && params[0]?.startsWith?.('usr_') ? params[2] : (params[1] || 'Trader');
+    const googleIdParam = params.length >= 5 && params[0]?.startsWith?.('usr_') ? params[3] : '';
+    const avatarUrlParam = params.length >= 5 && params[0]?.startsWith?.('usr_') ? params[4] : '';
+
+    const email = (emailParam || '').toLowerCase().trim();
     const user = {
-      id: 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      id: newId,
       email,
-      name,
+      name: nameParam || 'Trader',
+      google_id: googleIdParam || '',
+      avatar_url: avatarUrlParam || '',
       status: 'active',
       is_email_verified: true,
       created_at: new Date(),
@@ -856,6 +932,22 @@ function handleMockQuery(text, params) {
     };
     mockUsers.push(user);
     return { rows: [user] };
+  }
+
+  if (normalized.includes('update users set')) {
+    const id = params[params.length - 1];
+    let user = mockUsers.find(u => u.id === id || u.email.toLowerCase() === (id + '').toLowerCase());
+    if (user) {
+      if (normalized.includes('last_login_at')) {
+        user.last_login_at = new Date();
+      }
+      if (normalized.includes('google_id =') && params.length >= 2) {
+        user.google_id = params[0] || user.google_id;
+        user.avatar_url = params[1] || user.avatar_url;
+      }
+      return { rows: [user] };
+    }
+    return { rows: [] };
   }
 
   if (normalized.includes('insert into app_entitlements')) {

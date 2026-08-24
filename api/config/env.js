@@ -11,7 +11,9 @@ export const config = {
   get adminEmail() { return process.env.ADMIN_EMAIL || 'keith.thompson@mytradingtoolbox.com'; },
   get welcomeSender() { return process.env.WELCOME_EMAIL_SENDER || 'hello@mytradingtoolbox.com'; },
   get defaultMeetUrl() { return process.env.GOOGLE_MEET_URL || 'https://meet.google.com/new'; },
-  get defaultAppUrl() { return process.env.APP_URL || 'https://mytradingtoolbox.com'; }
+  get defaultAppUrl() { return process.env.APP_URL || 'https://mytradingtoolbox.com'; },
+  get googleClientId() { return process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || ''; },
+  get jwtSecret() { return process.env.JWT_SECRET || 'mtt-portal-secret-token-key'; }
 };
 
 export default config;
