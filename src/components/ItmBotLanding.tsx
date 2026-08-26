@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Shield, 
   ShieldCheck, 
   Cpu, 
   CheckCircle2, 
   Sparkles, 
   Activity, 
-  Play, 
   Sliders, 
   RotateCcw, 
   BookOpen, 
   ArrowLeft,
+  ArrowRight,
+  ExternalLink,
+  BarChart3,
+  Mail,
+  Scale,
   X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -97,10 +100,12 @@ const ItmBotLanding: React.FC = () => {
           </div>
 
           <a 
-            href="#try-bot"
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20"
+            href="https://itmccbot.mytradingtoolbox.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5"
           >
-            Get Access
+            Launch itmCCbot <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
       </nav>
@@ -115,7 +120,7 @@ const ItmBotLanding: React.FC = () => {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-bold tracking-wide"
           >
             <ShieldCheck className="w-4 h-4 text-teal-400" />
-            <span>Think Risk First, Then Reward &bull; 100% Paper Trading Included</span>
+            <span>Think Risk First, Then Reward &bull; 100% Free Paper Test-Drive Active</span>
           </motion.div>
 
           <motion.h1 
@@ -133,7 +138,7 @@ const ItmBotLanding: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="text-slate-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto"
           >
-            The semi-automated <strong>ITM Covered Call Strategy BOT</strong> walks beginners through deep downside buffer calculations, capital reserves, and step-by-step recovery plans before opening a trade.
+            The automated <strong>ITM Covered Call Strategy BOT</strong> executes deep downside buffer calculations, Black-Scholes strike probability scoring, and disciplined recovery protocols before opening any trade.
           </motion.p>
 
           <motion.div 
@@ -143,17 +148,19 @@ const ItmBotLanding: React.FC = () => {
             className="flex flex-wrap items-center justify-center gap-4 pt-4"
           >
             <a 
-              href="#interactive-demo"
+              href="https://itmccbot.mytradingtoolbox.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-2xl text-sm font-bold transition-all shadow-xl shadow-blue-600/30 flex items-center gap-2 active:scale-95"
             >
-              <Play className="w-4 h-4 fill-current" /> Explore Interactive BOT Demo
+              <Sparkles className="w-4 h-4 text-amber-300" /> Launch itmCCbot Web App (Free Test-Drive) <ArrowRight className="w-4 h-4" />
             </a>
-            <button 
-              onClick={() => setIsRiskModalOpen(true)}
+            <a 
+              href="#test-drive-guide"
               className="px-6 py-3.5 bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-slate-200 rounded-2xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Shield className="w-4 h-4 text-teal-400" /> View 4-Step Risk Protocol
-            </button>
+              <BookOpen className="w-4 h-4 text-teal-400" /> 3-Step Setup Guide
+            </a>
           </motion.div>
         </section>
 
@@ -424,40 +431,186 @@ const ItmBotLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* WAITLIST & SIGNUP CTA */}
-        <section id="try-bot" className="relative text-center space-y-6 max-w-2xl mx-auto pt-6">
+        {/* 3-STEP TEST-DRIVE ONBOARDING ROADMAP */}
+        <section id="test-drive-guide" className="space-y-8 max-w-5xl mx-auto scroll-mt-24">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full">
+              Zero-Risk Setup Guide
+            </span>
+            <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">
+              How to Test-Drive the BOT in 3 Easy Steps
+            </h2>
+            <p className="text-slate-400 text-xs md:text-sm max-w-xl mx-auto">
+              Get free paper-trading access using your Tradier Virtual Account (<code className="text-cyan-300 font-mono text-[11px]">VAxxxxxxx</code>) in under 3 minutes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* STEP 1 */}
+            <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-6 space-y-4 relative flex flex-col justify-between hover:border-blue-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black font-mono">
+                  01
+                </div>
+                <h3 className="text-base font-bold text-white">Create Free Hub Account</h3>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Sign up on the <strong>MyTradingToolbox</strong> hub. Your single login gives you unified access to all current and future quantitative trading tools.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/5 text-[11px] text-teal-300 font-semibold flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" /> 100% Free Member Access
+              </div>
+            </div>
+
+            {/* STEP 2 */}
+            <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-6 space-y-4 relative flex flex-col justify-between hover:border-teal-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 font-black font-mono">
+                  02
+                </div>
+                <h3 className="text-base font-bold text-white">Get Tradier Virtual Token</h3>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Log into Tradier Developer Portal and copy your <strong>Sandbox API Token</strong> corresponding to your Virtual Account (<code className="text-cyan-300 font-mono text-[11px]">VAxxxxxxx</code>).
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/5">
+                <a 
+                  href="https://developer.tradier.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 transition"
+                >
+                  Tradier Dev Portal <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+
+            {/* STEP 3 */}
+            <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-6 space-y-4 relative flex flex-col justify-between hover:border-indigo-500/40 transition-all">
+              <div className="space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black font-mono">
+                  03
+                </div>
+                <h3 className="text-base font-bold text-white">Backtest &amp; Arm Bot</h3>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  Launch <strong>itmCCbot</strong>, accept the Statutory Risk Waiver, run 12-month backtests, and start paper trade execution with live daily email reports.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/5">
+                <a 
+                  href="https://itmccbot.mytradingtoolbox.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-teal-300 hover:text-teal-200 font-bold flex items-center gap-1 transition"
+                >
+                  Launch App Now <ArrowRight className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* QUANTITATIVE ENGINE ADVANTAGES */}
+        <section className="space-y-8 max-w-5xl mx-auto">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full">
+              Quantitative Architecture
+            </span>
+            <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight">
+              Institutional Precision for Retail Options Sellers
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl space-y-2.5">
+              <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+                <BarChart3 className="w-4 h-4" />
+              </div>
+              <h4 className="font-bold text-white text-sm">Real EOD Chains &amp; Black-Scholes Models</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Backtesting collects authentic historical End-Of-Day options chains with real historical strikes, bid/ask spreads, and Black-Scholes assignment probabilities.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl space-y-2.5">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <Scale className="w-4 h-4" />
+              </div>
+              <h4 className="font-bold text-white text-sm">Worst-Case Backtest vs. Live Mid-Prices</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Simulations model worst-case executions (Stock Ask / Short Call Bid), while live automated orders peg and step at optimized <strong>MID prices</strong> for maximum execution quality.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl space-y-2.5">
+              <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h4 className="font-bold text-white text-sm">A/B Cadence &amp; Short-Roll Comparison</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Compare Monday vs Friday entry cadences and test early short-call take-profit rolling performance with a single click in the backtest suite.
+              </p>
+            </div>
+
+            <div className="bg-slate-900/40 border border-white/5 p-6 rounded-3xl space-y-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Mail className="w-4 h-4" />
+              </div>
+              <h4 className="font-bold text-white text-sm">Daily Executive Briefing Emails</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Receive morning trade previews, breakeven tracking, downside buffer breach alerts, and market-close execution recaps directly in your inbox.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* LAUNCH & CALL TO ACTION SECTION */}
+        <section id="try-bot" className="relative text-center space-y-6 max-w-3xl mx-auto pt-8">
           <div className="absolute inset-0 bg-blue-600/10 blur-3xl -z-10 rounded-full" />
           
           <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
-            Ready to Master ITM Covered Calls?
+            Start Your Free Paper Test-Drive Today
           </h2>
           <p className="text-slate-400 text-sm max-w-lg mx-auto">
-            Join the early access cohort. Test your setups in 100% paper trading mode or schedule a 1-on-1 walkthrough.
+            Test-drive the ITM Covered Call strategy 100% risk-free using your Tradier Virtual Account. Zero credit card required.
           </p>
 
-          <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email for early access..."
-              className="flex-1 bg-slate-950/90 border border-white/15 rounded-2xl px-4 py-3.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              disabled={loading || submitted}
-              className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-2xl text-xs font-bold transition-all shadow-lg shadow-blue-500/25 shrink-0 cursor-pointer disabled:opacity-50"
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <a
+              href="https://itmccbot.mytradingtoolbox.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 text-white rounded-2xl text-sm font-black transition-all shadow-xl shadow-blue-600/30 flex items-center gap-2 active:scale-95"
             >
-              {loading ? 'Submitting...' : submitted ? 'You\'re on the list! 🎉' : 'Get Access Now'}
-            </button>
-          </form>
+              <Sparkles className="w-4 h-4 text-amber-300" /> Launch itmCCbot Web App <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
 
-          {submitted && (
-            <p className="text-xs text-teal-300 font-semibold">
-              ✓ Thanks! You will receive early access invitations and strategy teardowns directly in your inbox.
-            </p>
-          )}
+          <div className="pt-6 border-t border-white/5 max-w-md mx-auto space-y-3">
+            <span className="text-xs text-slate-500 block">Want early access updates &amp; strategy teardowns via email?</span>
+            <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email..."
+                className="flex-1 bg-slate-950/90 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="submit"
+                disabled={loading || submitted}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer disabled:opacity-50"
+              >
+                {loading ? '...' : submitted ? 'Subscribed! 🎉' : 'Subscribe'}
+              </button>
+            </form>
+            {submitted && (
+              <p className="text-xs text-teal-300 font-semibold">
+                ✓ Thanks! You will receive strategy updates and release notices directly in your inbox.
+              </p>
+            )}
+          </div>
         </section>
 
       </div>
