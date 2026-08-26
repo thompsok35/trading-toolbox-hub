@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   TrendingUp,
   Cpu, 
@@ -413,6 +413,21 @@ const Home: React.FC = () => {
   );
 };
 
+const PageTracker: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'page_view', {
+        page_path: location.pathname + location.search,
+        page_title: document.title
+      });
+    }
+  }, [location]);
+
+  return null;
+};
+
 function App() {
   // Identification & Heartbeat tracking
   useEffect(() => {
@@ -428,6 +443,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <PageTracker />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
