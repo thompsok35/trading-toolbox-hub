@@ -14,7 +14,8 @@ import {
   UserCheck,
   ChevronRight,
   Menu,
-  X
+  X,
+  HeartHandshake
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ToolCard from './components/ToolCard';
@@ -128,13 +129,13 @@ const Home: React.FC = () => {
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
+            {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
             <button 
               onClick={scrollToTools}
               className="hover:text-blue-400 transition-colors cursor-pointer"
             >
-              6 Suite Apps
+              7 Suite Apps
             </button>
             <button 
               onClick={scrollToPartners}
@@ -194,7 +195,7 @@ const Home: React.FC = () => {
               onClick={scrollToTools}
               className="text-left py-1 text-xs font-semibold text-slate-300 hover:text-white"
             >
-              6 Suite Apps
+              7 Suite Apps
             </button>
             <button 
               onClick={scrollToPartners}
@@ -272,11 +273,11 @@ const Home: React.FC = () => {
               </motion.p>
             </div>
 
-            {/* 6 Suite Applications Grid */}
+            {/* 7 Suite Applications Grid */}
             <div id="suite-tools" className="pt-4 space-y-4">
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" /> 6 Integrated Suite Applications
+                  <span className="w-2 h-2 rounded-full bg-blue-500" /> 7 Integrated Suite Applications
                 </h2>
                 <Link to="/portal" className="text-xs text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1">
                   Access Portal &rarr;
@@ -340,6 +341,15 @@ const Home: React.FC = () => {
                     description="Semi-automated strategy bot guiding traders through position risk analysis, capital management, and 100% risk-free paper trading for steady monthly stock income."
                     icon={Cpu}
                     url="/itm-covered-call-bot"
+                  />
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <ToolCard 
+                    title="PayItForward"
+                    description="Help parents and grandparents invite family members to contribute to a child's 529 or ROTH IRA savings account."
+                    icon={HeartHandshake}
+                    url="https://payitforward.mytradingtoolbox.com"
                   />
                 </motion.div>
               </motion.div>

@@ -45,15 +45,16 @@ export class UserRepository {
       );
       existing = userRes.rows[0];
 
-      // Default entitlements: Opus, CashMap, Alerts, DataServices, ITM Bot active, AI Coach pending
+      // Default entitlements: Opus, CashMap, Alerts, DataServices, ITM Bot, PayItForward active, AI Coach pending
       await query(
         `INSERT INTO app_entitlements (
           user_id, opus_access, opus_tradier_connected,
           ai_coach_access, ai_coach_status,
           alerts_access, alerts_sms_limit,
           cashmap_access, dataservices_access,
-          itm_bot_access, itm_bot_mode
-        ) VALUES ($1, true, false, false, 'pending_approval', true, 10, true, true, true, 'paper_only')
+          itm_bot_access, itm_bot_mode,
+          payitforward_access
+        ) VALUES ($1, true, false, false, 'pending_approval', true, 10, true, true, true, 'paper_only', true)
         ON CONFLICT (user_id) DO NOTHING`,
         [existing.id]
       );
@@ -100,8 +101,9 @@ export class UserRepository {
           ai_coach_access, ai_coach_status,
           alerts_access, alerts_sms_limit,
           cashmap_access, dataservices_access,
-          itm_bot_access, itm_bot_mode
-        ) VALUES ($1, true, false, false, 'pending_approval', true, 10, true, true, true, 'paper_only')
+          itm_bot_access, itm_bot_mode,
+          payitforward_access
+        ) VALUES ($1, true, false, false, 'pending_approval', true, 10, true, true, true, 'paper_only', true)
         ON CONFLICT (user_id) DO NOTHING`,
         [user.id]
       );
@@ -141,7 +143,8 @@ export class UserRepository {
         cashmap_access: true,
         dataservices_access: true,
         itm_bot_access: true,
-        itm_bot_mode: 'paper_only'
+        itm_bot_mode: 'paper_only',
+        payitforward_access: true
       },
       subscription: subRes.rows[0] || {
         plan_tier: 'free_tier',
@@ -171,6 +174,7 @@ export class UserRepository {
         u.google_id, u.avatar_url,
         e.opus_access, e.opus_tradier_connected, e.ai_coach_access, e.ai_coach_status, e.ai_coach_approved_at,
         e.alerts_access, e.alerts_sms_limit, e.cashmap_access, e.dataservices_access, e.itm_bot_access, e.itm_bot_mode,
+        e.payitforward_access,
         s.plan_tier, s.status as subscription_status, s.stripe_customer_id
       FROM users u
       LEFT JOIN app_entitlements e ON u.id = e.user_id
@@ -196,7 +200,7 @@ export class UserRepository {
     const allowed = [
       'opus_access', 'opus_tradier_connected', 'ai_coach_access', 'ai_coach_status',
       'ai_coach_approved_at', 'alerts_access', 'alerts_sms_limit', 'cashmap_access',
-      'dataservices_access', 'itm_bot_access', 'itm_bot_mode'
+      'dataservices_access', 'itm_bot_access', 'itm_bot_mode', 'payitforward_access'
     ];
 
     for (const key of allowed) {

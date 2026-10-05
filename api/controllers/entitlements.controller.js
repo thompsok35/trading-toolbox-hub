@@ -94,6 +94,14 @@ export class EntitlementsController {
         });
       }
 
+      if (app === 'payitforward') {
+        return res.json({
+          allowed: ent.payitforward_access !== false,
+          tier,
+          user: { id: user.id, email: user.email, name: user.name }
+        });
+      }
+
       // General fallback
       return res.json({
         allowed: true,

@@ -37,7 +37,8 @@ import {
   Activity,
   Sliders,
   Package,
-  Layers
+  Layers,
+  HeartHandshake
 } from 'lucide-react';
 
 interface Note {
@@ -87,6 +88,7 @@ const AVAILABLE_TOOLS = [
   { id: 'opportunity-scanner', name: 'Opportunity Scanner & Stock Health' },
   { id: 'opus-ai-coach', name: 'Opus AI Options Coach' },
   { id: 'itm-covered-call-bot', name: 'ITM Covered Call Strategy BOT' },
+  { id: 'payitforward', name: 'PayItForward (529 & ROTH IRA)' },
   { id: 'market-update', name: 'Daily Market Update' }
 ];
 
@@ -136,6 +138,7 @@ const AdminDashboard: React.FC = () => {
     dataservices_access: true,
     itm_bot_access: true,
     itm_bot_mode: 'paper_only',
+    payitforward_access: true,
     plan_tier: 'free_tier'
   });
   const [savingEntitlements, setSavingEntitlements] = useState(false);
@@ -386,6 +389,7 @@ const AdminDashboard: React.FC = () => {
       dataservices_access: customer.dataservices_access !== false,
       itm_bot_access: customer.itm_bot_access !== false,
       itm_bot_mode: customer.itm_bot_mode || 'paper_only',
+      payitforward_access: customer.payitforward_access !== false,
       plan_tier: customer.plan_tier || 'free_tier'
     });
     setEntitlementsFeedback(null);
@@ -405,6 +409,7 @@ const AdminDashboard: React.FC = () => {
         dataservices_access: true,
         itm_bot_access: true,
         itm_bot_mode: 'live_enabled',
+        payitforward_access: true,
         plan_tier: 'vip_elite'
       }));
     } else if (preset === 'income') {
@@ -417,6 +422,7 @@ const AdminDashboard: React.FC = () => {
         alerts_access: false,
         dataservices_access: false,
         itm_bot_access: false,
+        payitforward_access: true,
         plan_tier: 'pro_suite'
       }));
     } else if (preset === 'bot_alerts') {
@@ -431,6 +437,7 @@ const AdminDashboard: React.FC = () => {
         dataservices_access: false,
         itm_bot_access: true,
         itm_bot_mode: 'live_enabled',
+        payitforward_access: false,
         plan_tier: 'pro_suite'
       }));
     } else if (preset === 'research') {
@@ -443,6 +450,7 @@ const AdminDashboard: React.FC = () => {
         alerts_access: false,
         dataservices_access: true,
         itm_bot_access: false,
+        payitforward_access: false,
         plan_tier: 'pro_suite'
       }));
     } else if (preset === 'free') {
@@ -457,6 +465,7 @@ const AdminDashboard: React.FC = () => {
         dataservices_access: true,
         itm_bot_access: true,
         itm_bot_mode: 'paper_only',
+        payitforward_access: true,
         plan_tier: 'free_tier'
       }));
     }
@@ -517,7 +526,8 @@ const AdminDashboard: React.FC = () => {
           cashmap_access: entitlementsForm.cashmap_access,
           dataservices_access: entitlementsForm.dataservices_access,
           itm_bot_access: entitlementsForm.itm_bot_access,
-          itm_bot_mode: entitlementsForm.itm_bot_mode
+          itm_bot_mode: entitlementsForm.itm_bot_mode,
+          payitforward_access: entitlementsForm.payitforward_access
         })
       });
 
@@ -1382,6 +1392,19 @@ const AdminDashboard: React.FC = () => {
                               >
                                 {c.itm_bot_access !== false ? (c.itm_bot_mode === 'live_enabled' ? '⚡ BOT: Live' : '📝 BOT: Paper') : '✕ BOT: OFF'}
                               </button>
+
+                              {/* 7. PayItForward */}
+                              <button
+                                onClick={() => handleToggleSingleEntitlement(c.id, 'payitforward_access', c.payitforward_access !== false)}
+                                title="Click to toggle PayItForward access"
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                                  c.payitforward_access !== false 
+                                    ? 'bg-pink-500/20 border-pink-500/40 text-pink-300 hover:bg-pink-500/30' 
+                                    : 'bg-slate-950 border-white/10 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {c.payitforward_access !== false ? '🎁 PayItForward: ON' : '✕ PayItForward: OFF'}
+                              </button>
                             </div>
                           </td>
                           <td className="p-4 text-right space-x-2">
@@ -1389,7 +1412,7 @@ const AdminDashboard: React.FC = () => {
                               onClick={() => handleOpenEntitlementsModal(c)}
                               className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 text-blue-300 rounded-lg text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5"
                             >
-                              <Sliders className="w-3.5 h-3.5" /> Manage 6 Apps
+                              <Sliders className="w-3.5 h-3.5" /> Manage Suite Apps
                             </button>
                             
                             <button
@@ -2979,6 +3002,28 @@ const AdminDashboard: React.FC = () => {
                         <option value="live_enabled">⚡ Live Brokerage Authorized</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* 7. PayItForward */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    entitlementsForm.payitforward_access ? 'bg-slate-950 border-pink-500/40 shadow-[0_0_15px_rgba(236,72,153,0.15)]' : 'bg-slate-950/40 border-white/5 opacity-70'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400"><HeartHandshake className="w-4 h-4" /></div>
+                        <span className="font-bold text-xs text-white">PayItForward (529 & ROTH IRA)</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={entitlementsForm.payitforward_access}
+                          onChange={(e) => setEntitlementsForm({ ...entitlementsForm, payitforward_access: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">529 & ROTH IRA savings account family gifting portal.</p>
                   </div>
 
                 </div>

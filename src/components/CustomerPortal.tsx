@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Lock,
-  KeyRound
+  KeyRound,
+  HeartHandshake
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -291,7 +292,7 @@ export const CustomerPortal: React.FC = () => {
 
             <div className="pt-6 border-t border-white/5 text-[11px] text-slate-500 space-y-1">
               <p>🔒 Protected by Google Cloud Identity Services & 256-Bit SSL Encryption</p>
-              <p>Includes access to Opus, AI Options Coach, Alerts, CashMap, DataServices & ITM BOT.</p>
+              <p>Includes access to Opus, AI Options Coach, Alerts, CashMap, DataServices, ITM BOT & PayItForward.</p>
             </div>
 
           </div>
@@ -367,11 +368,11 @@ export const CustomerPortal: React.FC = () => {
               </div>
             </div>
 
-            {/* 6 Tool Entitlement Matrix */}
+            {/* 7 Tool Entitlement Matrix */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-teal-400" /> 6 Suite Applications Access Matrix
+                  <Sparkles className="w-4 h-4 text-teal-400" /> 7 Suite Applications Access Matrix
                 </h2>
                 <span className="text-xs text-slate-400">
                   Logged in as <strong className="text-white">{currentUser.email}</strong>
@@ -574,6 +575,37 @@ export const CustomerPortal: React.FC = () => {
                   )}
                 </div>
 
+                {/* 7. PayItForward */}
+                <div className={`bg-slate-900/50 border ${ent.payitforward_access !== false ? 'border-white/5 hover:border-pink-500/30' : 'border-rose-500/20 opacity-80'} p-5 rounded-2xl space-y-3 transition-colors`}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-pink-500/10 text-pink-400"><HeartHandshake className="w-4 h-4" /></div>
+                      <div>
+                        <h3 className="font-bold text-sm text-white">PayItForward</h3>
+                        <div className="text-[10px] text-slate-400">529 & ROTH IRA Savings</div>
+                      </div>
+                    </div>
+                    {ent.payitforward_access !== false ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">Active ✅</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Locked 🔒</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400">Help parents and grandparents invite family members to contribute to a child's 529 or ROTH IRA savings account.</p>
+                  {ent.payitforward_access !== false ? (
+                    <a href="https://payitforward.mytradingtoolbox.com" target="_blank" rel="noreferrer" className="text-xs text-pink-400 hover:text-pink-300 font-semibold flex items-center gap-1">
+                      Launch PayItForward <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button 
+                      onClick={() => handleRequestAccess('PayItForward', 'payitforward')}
+                      className="text-xs text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      Request Access &rarr;
+                    </button>
+                  )}
+                </div>
+
               </div>
             </div>
 
@@ -601,6 +633,7 @@ export const CustomerPortal: React.FC = () => {
                       <option value="cashmap">CashMap Planner</option>
                       <option value="dataservices">DataServices Scanner</option>
                       <option value="itm_bot">ITM Covered Call Strategy BOT</option>
+                      <option value="payitforward">PayItForward (529 & ROTH IRA)</option>
                       <option value="billing">Subscriptions & Billing</option>
                     </select>
                   </div>

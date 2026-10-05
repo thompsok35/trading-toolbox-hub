@@ -9,6 +9,7 @@ const TOOLS = [
   { id: 'opportunity-scanner', name: 'Opportunity Scanner & Stock Health' },
   { id: 'opus-ai-coach', name: 'Opus AI Options Coach' },
   { id: 'itm-covered-call-bot', name: 'ITM Covered Call Strategy BOT' },
+  { id: 'payitforward', name: 'PayItForward (529 & ROTH IRA Savings)' },
   { id: 'market-update', name: 'Daily Market Update' }
 ];
 

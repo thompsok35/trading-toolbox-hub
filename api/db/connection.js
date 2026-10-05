@@ -595,8 +595,19 @@ export async function initDb() {
         dataservices_access BOOLEAN DEFAULT TRUE,
         itm_bot_access BOOLEAN DEFAULT TRUE,
         itm_bot_mode TEXT DEFAULT 'paper_only',
+        payitforward_access BOOLEAN DEFAULT TRUE,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Column migrations for app_entitlements
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_entitlements' AND column_name='payitforward_access') THEN
+          ALTER TABLE app_entitlements ADD COLUMN payitforward_access BOOLEAN DEFAULT TRUE;
+        END IF;
+      END $$;
     `);
 
     // 5. Subscriptions Table
@@ -1000,6 +1011,7 @@ function handleMockQuery(text, params) {
         dataservices_access: true,
         itm_bot_access: true,
         itm_bot_mode: 'paper_only',
+        payitforward_access: true,
         updated_at: new Date()
       };
       mockEntitlements.push(ent);
@@ -1030,6 +1042,7 @@ function handleMockQuery(text, params) {
         dataservices_access: true,
         itm_bot_access: true,
         itm_bot_mode: 'paper_only',
+        payitforward_access: true,
         updated_at: new Date()
       };
       mockEntitlements.push(ent);
